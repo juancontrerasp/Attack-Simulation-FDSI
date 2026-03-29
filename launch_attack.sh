@@ -51,12 +51,22 @@ if [ -f "results.json" ]; then
     echo ""
     echo "✅ Attack simulation complete!"
     echo ""
+    
+    # Create standalone dashboard
+    if [ -f "create-standalone-dashboard.py" ]; then
+        echo "📊 Creating standalone dashboard..."
+        python3 create-standalone-dashboard.py
+        echo ""
+    fi
+    
     echo "📊 Results saved to:"
     echo "   - results.json (detailed results)"
-    echo "   - dashboard.html (interactive view)"
+    echo "   - dashboard.html (needs web server)"
+    echo "   - dashboard-standalone.html (works directly in browser) ⭐"
     echo ""
     echo "To view the dashboard:"
-    echo "   ./launch_dashboard.sh"
+    echo "   Option 1 (recommended): Open dashboard-standalone.html in your browser"
+    echo "   Option 2: ./launch_dashboard.sh (starts web server)"
     echo ""
     
     # Quick summary
