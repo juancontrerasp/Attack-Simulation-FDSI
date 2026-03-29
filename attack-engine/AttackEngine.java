@@ -1,6 +1,13 @@
 import attacks.BruteForceAttack;
+import attacks.CorsAttack;
 import attacks.InfoLeakAttack;
+import attacks.InsecureHeadersAttack;
+import attacks.JwtTokenAttack;
+import attacks.PathTraversalAttack;
+import attacks.SessionFixationAttack;
 import attacks.SqlInjectionAttack;
+import attacks.WeakPasswordAttack;
+import attacks.XssAttack;
 import model.AttackResult;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,6 +37,7 @@ public class AttackEngine {
 
         List<AttackResult> attacks = new ArrayList<>();
         
+        // Authentication & Session Attacks
         AttackResult sql = SqlInjectionAttack.run(baseUrl);
         System.out.println(sql);
         attacks.add(sql);
@@ -38,9 +46,39 @@ public class AttackEngine {
         System.out.println(brute);
         attacks.add(brute);
         
+        AttackResult session = SessionFixationAttack.run(baseUrl);
+        System.out.println(session);
+        attacks.add(session);
+        
+        AttackResult jwt = JwtTokenAttack.run(baseUrl);
+        System.out.println(jwt);
+        attacks.add(jwt);
+        
+        // Input Validation Attacks
+        AttackResult xss = XssAttack.run(baseUrl);
+        System.out.println(xss);
+        attacks.add(xss);
+        
+        AttackResult pathTraversal = PathTraversalAttack.run(baseUrl);
+        System.out.println(pathTraversal);
+        attacks.add(pathTraversal);
+        
+        // Configuration & Policy Attacks
         AttackResult leak = InfoLeakAttack.run(baseUrl);
         System.out.println(leak);
         attacks.add(leak);
+        
+        AttackResult headers = InsecureHeadersAttack.run(baseUrl);
+        System.out.println(headers);
+        attacks.add(headers);
+        
+        AttackResult cors = CorsAttack.run(baseUrl);
+        System.out.println(cors);
+        attacks.add(cors);
+        
+        AttackResult weakPass = WeakPasswordAttack.run(baseUrl);
+        System.out.println(weakPass);
+        attacks.add(weakPass);
 
         return new SystemResult(label, baseUrl, attacks);
     }
