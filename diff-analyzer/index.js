@@ -86,7 +86,14 @@ function formatReport(input) {
     const highThreats = threats.filter(t => t.severity === 'Alta');
     const otherThreats = threats.filter(t => t.severity !== 'Alta');
 
-    if (highThreats.length > 0) {
+    const highCount = highThreats.length;
+    const mediaCount = otherThreats.filter(t => t.severity === 'Media').length;
+    const bajaCount = otherThreats.filter(t => t.severity === 'Baja').length;
+    
+    // Hidden summary for the hook's log
+    console.log(`LOG_SUMMARY: Alta=${highCount}, Media=${mediaCount}, Baja=${bajaCount}`);
+
+    if (highCount > 0) {
         console.log(RED + BOLD + 'PUSH BLOQUEADO: Se detectaron vulnerabilidades de severidad Alta.' + NC + '\n');
         highThreats.forEach(t => {
             console.log(RED + BOLD + '--- AMENAZA DETECTADA (CRÍTICA) ---' + NC);

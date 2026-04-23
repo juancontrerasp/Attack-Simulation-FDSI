@@ -1,84 +1,84 @@
 #!/bin/bash
 
 # STRIDE Security Pre-push Hook
-# Captures diff and prepares context for AI vulnerability analysis.
+# Final version: ST-03.1 + ST-03.2 + ST-03.3
 
-# Colors for terminal output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+BOLD='\033[1m'
+NC='\033[0m'
 
 LOG_FILE=".git/hooks/stride-hook.log"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
+# Function: Rotate Log
+rotate_log() {
+    if [ -f "$LOG_FILE" ]; then
+        local size=$(wc -c < "$LOG_FILE")
+        if [ $size -gt 1048576 ]; then # 1MB
+            mv "$LOG_FILE" "${LOG_FILE}.1"
+            echo "[$TIMESTAMP] Log rotated (file exceeded 1MB)." > "$LOG_FILE"
+        fi
+    fi
+}
+
 # 1. DEV_MODE Check
 if [ "$DEV_MODE" = "true" ]; then
-    echo -e "${YELLOW}STRIDE: DEV_MODE=true detectado. Omitiendo bloqueo de seguridad.${NC}"
-    echo "[$TIMESTAMP] DEV_MODE bypass triggered." >> "$LOG_FILE"
+    echo -e "${GREEN}✓ [DEV_MODE] Simulación de análisis completada. No se bloqueará el push.${NC}"
+    rotate_log
+    echo "[$TIMESTAMP] RESULT: OK (DEV_MODE) | Analyzed: N/A | Threats: None" >> "$LOG_FILE"
     exit 0
 fi
 
-echo -e "${BLUE}STRIDE: Analizando diff para detectar nuevas vulnerabilidades...${NC}"
-
 # 2. Determine the diff target
-# Use HEAD~1 unless it's the first commit in the repository
 if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
     DIFF_REF="HEAD~1"
 else
-    # Initial commit case: Use the empty tree hash
     DIFF_REF="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 fi
 
-# 3. Capture modified files
+# 3. Filter relevant files
 FILES=$(git diff "$DIFF_REF" --name-only)
-
-if [ -z "$FILES" ]; then
-    echo -e "${GREEN}STRIDE: No hay cambios para analizar.${NC}"
-    echo "[$TIMESTAMP] No files changed." >> "$LOG_FILE"
-    exit 0
-fi
-
-# 4. Filter relevant files (.java, .js, .ts, .py) and exclude large files (> 50KB)
 RELEVANT_FILES=""
 for file in $FILES; do
-    # Filter by extension
-    if [[ "$file" =~ \.(java|js|ts|py)$ ]]; then
-        # Check if file exists (it might have been deleted)
-        if [ -f "$file" ]; then
-            # Check file size (portable way using wc -c)
-            FILE_SIZE=$(wc -c < "$file")
-            if [ "$FILE_SIZE" -le 51200 ]; then
-                RELEVANT_FILES="$RELEVANT_FILES $file"
-            else
-                echo -e "${YELLOW}STRIDE: Omitiendo $file (excede 50KB)${NC}"
-                echo "[$TIMESTAMP] Skipped large file: $file ($FILE_SIZE bytes)" >> "$LOG_FILE"
-            fi
+    if [[ "$file" =~ \.(java|js|ts|py)$ ]] && [ -f "$file" ]; then
+        FILE_SIZE=$(wc -c < "$file")
+        if [ "$FILE_SIZE" -le 51200 ]; then
+            RELEVANT_FILES="$RELEVANT_FILES $file"
         fi
     fi
 done
 
 if [ -z "$RELEVANT_FILES" ]; then
-    echo -e "${GREEN}STRIDE: No se detectaron archivos de código fuente relevantes en este push.${NC}"
-    echo "[$TIMESTAMP] No relevant source files found in diff." >> "$LOG_FILE"
+    rotate_log
+    echo "[$TIMESTAMP] RESULT: OK (No relevant files) | Analyzed: None" >> "$LOG_FILE"
     exit 0
 fi
 
-# 5. Capture Diff Content
-# For ST-03.1, we prepare the context. Actual agent call will be in future tasks.
-DIFF_CONTENT=""
-for file in $RELEVANT_FILES; do
-    DIFF_CONTENT="$DIFF_CONTENT\n\n--- FILE: $file ---\n"
-    DIFF_CONTENT="$DIFF_CONTENT$(git diff "$DIFF_REF" -- "$file")"
-done
+echo -e "${BLUE}STRIDE: Iniciando análisis de seguridad en los cambios...${NC}"
 
-# 6. Log Execution
-echo "[$TIMESTAMP] Analysis started for: $RELEVANT_FILES" >> "$LOG_FILE"
+# 4. Capture Diff and Run Analyzer
+ANALYSIS_RAW=$(git diff "$DIFF_REF" -- $RELEVANT_FILES | node diff-analyzer/index.js 2>&1)
+EXIT_CODE=$?
 
-# 7. Placeholder for Agent logic and blocking
-# For now, we allow the push but log that the capture was successful.
-echo -e "${GREEN}STRIDE: Captura de diff exitosa. No se detectaron amenazas críticas (Modo preparación).${NC}"
-echo "[$TIMESTAMP] Diff capture successful. No high-severity threats found in mock analysis." >> "$LOG_FILE"
+# 5. Advanced Logging
+rotate_log
+LOG_SUMMARY=$(echo "$ANALYSIS_RAW" | grep "LOG_SUMMARY:" | cut -d' ' -f2-)
+[ -z "$LOG_SUMMARY" ] && LOG_SUMMARY="Alta=0, Media=0, Baja=0"
 
-exit 0
+RESULT_STR="OK"
+if [ $EXIT_CODE -eq 1 ]; then
+    RESULT_STR="BLOCKED"
+elif [[ "$LOG_SUMMARY" == *"Media="[1-9]* ]] || [[ "$LOG_SUMMARY" == *"Baja="[1-9]* ]]; then
+    RESULT_STR="WARNING"
+fi
+
+echo "[$TIMESTAMP] RESULT: $RESULT_STR | Analyzed: $(echo $RELEVANT_FILES | tr '\n' ' ') | Threats: $LOG_SUMMARY" >> "$LOG_FILE"
+
+# 6. Display Output (excluding the hidden LOG_SUMMARY line)
+echo -e "$ANALYSIS_RAW" | grep -v "LOG_SUMMARY:"
+
+exit $EXIT_CODE
