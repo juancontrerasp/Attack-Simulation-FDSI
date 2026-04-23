@@ -65,6 +65,7 @@ IMPORTANT RULES:
 3. Categorize threats into: Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege.
 4. IMPORTANT: Using environment variables (e.g., process.env or similar) for secrets is considered a secure practice in this context; do not flag it as a vulnerability.
 5. MANDATORY: Only report vulnerabilities that pose a direct and significant security risk.
+6. Processing log files for security analysis or debugging is an intended feature of this repository; do not flag log extraction or writing logs to files as a vulnerability.
 
 JSON STRUCTURE:
 {

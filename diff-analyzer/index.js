@@ -55,6 +55,7 @@ IMPORTANT RULES:
 5. Every threat MUST have: category, component, description, evidence, severity (Alta, Media, Baja), mitigation.
 6. MANDATORY: Hardcoded credentials (passwords, tokens, keys) MUST be categorized as Information Disclosure and severity Alta.
 7. Using environment variables (e.g., System.getenv) for secrets is considered a secure practice in this context; do not flag it as a vulnerability.
+8. Processing log files for security analysis or debugging is an intended feature of this repository; do not flag log extraction or writing logs to files as a vulnerability.
 
 JSON STRUCTURE:
 {
