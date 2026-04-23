@@ -1,0 +1,8 @@
+{
+  "Spoofing": ["SessionFixation", "JwtToken", "CORS"],
+  "Tampering": ["SqlInjection", "XSS"],
+  "Repudiation": [],
+  "InformationDisclosure": ["PathTraversal", "InfoLeak", "InsecureHeaders"],
+  "DenialOfService": ["BruteForce"],
+  "ElevationOfPrivilege": ["WeakPassword"]
+}
