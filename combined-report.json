@@ -1,10 +1,11 @@
 {
-  "timestamp": "2026-04-23T18:18:19.087Z",
+  "timestamp": "2026-04-23T18:23:19.916Z",
   "executive_summary": {
     "total_detected": 10,
-    "total_confirmed": 0,
+    "total_confirmed": 2,
     "total_unconfirmed": 0,
-    "system_status": "unavailable_or_skipped"
+    "confirmation_rate_percent": 20,
+    "system_status": "available"
   },
   "stride_analysis": {
     "Spoofing": [
@@ -98,7 +99,15 @@
       }
     ]
   },
-  "dynamic_validation": [],
+  "dynamic_validation": [
+    {
+      "attack_name": "SQL Injection",
+      "attack_class": "SqlInjectionAttack",
+      "vulnerable": true,
+      "evidence": "Detected payload reflection",
+      "response_code": 200
+    }
+  ],
   "combined_threats": [
     {
       "category": "Spoofing",
@@ -108,7 +117,8 @@
       "severity": "Alta",
       "mitigation": "Restrict CORS to specific trusted origins.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     },
     {
       "category": "Spoofing",
@@ -118,7 +128,8 @@
       "severity": "Alta",
       "mitigation": "Ensure proper signature verification for JWT tokens.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     },
     {
       "category": "Spoofing",
@@ -128,7 +139,8 @@
       "severity": "Alta",
       "mitigation": "Regenerate session ID upon successful login.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     },
     {
       "category": "Tampering",
@@ -137,8 +149,13 @@
       "evidence": "Response contains 'success' or 'token' after injection payload.",
       "severity": "Alta",
       "mitigation": "Use prepared statements and parameterized queries to prevent SQL injection.",
-      "confirmed": null,
-      "dynamic_evidence": null
+      "confirmed": true,
+      "confirmation_reason": null,
+      "dynamic_validation": {
+        "attack": "SQL Injection",
+        "evidence": "Detected payload reflection",
+        "response_code": 200
+      }
     },
     {
       "category": "Tampering",
@@ -147,8 +164,13 @@
       "evidence": "Payload '<script>alert('XSS')</script>' reflected in response.",
       "severity": "Alta",
       "mitigation": "Sanitize and encode user inputs to prevent XSS.",
-      "confirmed": null,
-      "dynamic_evidence": null
+      "confirmed": true,
+      "confirmation_reason": null,
+      "dynamic_validation": {
+        "attack": "SQL Injection",
+        "evidence": "Detected payload reflection",
+        "response_code": 200
+      }
     },
     {
       "category": "InformationDisclosure",
@@ -158,7 +180,8 @@
       "severity": "Media",
       "mitigation": "Ensure consistent responses for valid and invalid usernames.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     },
     {
       "category": "InformationDisclosure",
@@ -168,7 +191,8 @@
       "severity": "Media",
       "mitigation": "Implement essential security headers in HTTP responses.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     },
     {
       "category": "InformationDisclosure",
@@ -178,7 +202,8 @@
       "severity": "Alta",
       "mitigation": "Validate and sanitize file paths to prevent path traversal.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     },
     {
       "category": "DenialOfService",
@@ -188,7 +213,8 @@
       "severity": "Media",
       "mitigation": "Implement account lockout mechanisms and rate limiting.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     },
     {
       "category": "ElevationOfPrivilege",
@@ -198,7 +224,8 @@
       "severity": "Alta",
       "mitigation": "Enforce strong password policies requiring complexity.",
       "confirmed": null,
-      "dynamic_evidence": null
+      "confirmation_reason": "no_dynamic_attack_mapped_or_executed",
+      "dynamic_validation": null
     }
   ]
 }
