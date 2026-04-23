@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fdsi.local/schemas/threats-output-schema.json",
+  "title": "STRIDE Threat Output",
+  "type": "object",
+  "required": [
+    "metadata",
+    "summary",
+    "inferred_components",
+    "counts",
+    "threats"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "generated_at",
+        "repo_name",
+        "repo_path",
+        "provider",
+        "dev_mode",
+        "total_files_analyzed",
+        "context_size_chars",
+        "analysis_time_seconds",
+        "correction_retries"
+      ],
+      "properties": {
+        "generated_at": { "type": "string", "format": "date-time" },
+        "repo_name": { "type": "string" },
+        "repo_path": { "type": "string" },
+        "provider": { "type": "string" },
+        "dev_mode": { "type": "boolean" },
+        "total_files_analyzed": { "type": "integer", "minimum": 0 },
+        "context_size_chars": { "type": "integer", "minimum": 0 },
+        "analysis_time_seconds": { "type": "number", "minimum": 0 },
+        "correction_retries": { "type": "integer", "minimum": 0, "maximum": 2 }
+      },
+      "additionalProperties": true
+    },
+    "summary": { "type": "string" },
+    "inferred_components": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "counts": {
+      "type": "object",
+      "required": ["total", "Alta", "Media", "Baja", "byCategory"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "Alta": { "type": "integer", "minimum": 0 },
+        "Media": { "type": "integer", "minimum": 0 },
+        "Baja": { "type": "integer", "minimum": 0 },
+        "byCategory": {
+          "type": "object",
+          "required": [
+            "Spoofing",
+            "Tampering",
+            "Repudiation",
+            "InformationDisclosure",
+            "DenialOfService",
+            "ElevationOfPrivilege"
+          ],
+          "properties": {
+            "Spoofing": { "type": "integer", "minimum": 0 },
+            "Tampering": { "type": "integer", "minimum": 0 },
+            "Repudiation": { "type": "integer", "minimum": 0 },
+            "InformationDisclosure": { "type": "integer", "minimum": 0 },
+            "DenialOfService": { "type": "integer", "minimum": 0 },
+            "ElevationOfPrivilege": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "threats": {
+      "type": "object",
+      "required": [
+        "Spoofing",
+        "Tampering",
+        "Repudiation",
+        "InformationDisclosure",
+        "DenialOfService",
+        "ElevationOfPrivilege"
+      ],
+      "properties": {
+        "Spoofing": { "$ref": "#/$defs/threatArray" },
+        "Tampering": { "$ref": "#/$defs/threatArray" },
+        "Repudiation": { "$ref": "#/$defs/threatArray" },
+        "InformationDisclosure": { "$ref": "#/$defs/threatArray" },
+        "DenialOfService": { "$ref": "#/$defs/threatArray" },
+        "ElevationOfPrivilege": { "$ref": "#/$defs/threatArray" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "threatArray": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "category",
+          "component",
+          "description",
+          "evidence",
+          "severity",
+          "mitigation"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "Spoofing",
+              "Tampering",
+              "Repudiation",
+              "InformationDisclosure",
+              "DenialOfService",
+              "ElevationOfPrivilege"
+            ]
+          },
+          "component": { "type": "string" },
+          "description": { "type": "string" },
+          "evidence": { "type": "string" },
+          "severity": { "type": "string", "enum": ["Alta", "Media", "Baja"] },
+          "mitigation": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

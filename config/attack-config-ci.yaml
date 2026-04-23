@@ -1,0 +1,24 @@
+# Attack Engine — CI Configuration
+# Optimized for fast execution in CI/CD pipelines.
+# Reduced timeout, fewer brute-force attempts, subset of attacks.
+
+target_url: http://localhost:8080
+
+endpoints:
+  login: /login
+  register: /register
+  auth_me: /api/auth/me
+
+# Reduced for faster CI runs
+timeout_ms: 2000
+max_passwords: 10
+passwords_file: passwords.txt
+
+# Core attacks covering all STRIDE categories with minimal time cost
+enabled_attacks:
+  - SqlInjection       # Tampering
+  - BruteForce         # DenialOfService
+  - XSS                # Tampering
+  - InsecureHeaders    # InformationDisclosure
+  - CORS               # Spoofing
+  - WeakPassword       # ElevationOfPrivilege

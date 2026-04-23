@@ -1,0 +1,66 @@
+# ============================================================
+# Attack Engine — Configuration Reference
+# All fields are shown with their default values unless noted.
+# ============================================================
+
+# REQUIRED — URL base del objetivo.
+# Debe ser una URL HTTP o HTTPS valida.
+# Ejemplos:
+#   http://localhost:8080
+#   https://staging.myapp.com
+#   http://192.168.1.100:9090
+target_url: http://localhost:8080
+
+# OPTIONAL — Rutas de los endpoints del objetivo.
+# Cambia solo si tu app usa rutas no convencionales.
+endpoints:
+  # Endpoint de autenticacion (POST)
+  login: /login
+
+  # Endpoint de registro de usuarios (POST)
+  register: /register
+
+  # Endpoint de perfil autenticado (GET, requiere JWT)
+  auth_me: /api/auth/me
+
+# OPTIONAL — Timeout en milisegundos para cada peticion HTTP.
+# Valores recomendados:
+#   Desarrollo local: 5000
+#   Red remota:       10000
+#   CI/CD rapido:     2000
+# Debe ser un entero positivo.
+timeout_ms: 5000
+
+# OPTIONAL — Numero maximo de contrasenas a probar en BruteForce.
+# Rango valido: 1 a 1000.
+# Valores altos aumentan la cobertura pero tambien el tiempo de ejecucion.
+max_passwords: 100
+
+# OPTIONAL — Ruta al archivo de contrasenas para BruteForce.
+# Relativa al directorio desde donde se ejecuta launch_attack.sh.
+passwords_file: passwords.txt
+
+# OPTIONAL — Lista de ataques a ejecutar.
+# Omite este campo (o comenta todas las entradas) para ejecutar todos.
+# Nombres validos:
+#   SqlInjection    — Inyeccion SQL en login
+#   BruteForce      — Fuerza bruta de contrasenas
+#   SessionFixation — Fijacion de sesion y flags de cookie
+#   JwtToken        — Validacion de tokens JWT
+#   XSS             — Cross-Site Scripting en login y registro
+#   PathTraversal   — Recorrido de directorios
+#   InfoLeak        — Enumeracion de usuarios por respuestas distintas
+#   InsecureHeaders — Cabeceras de seguridad HTTP ausentes
+#   CORS            — Politica CORS permisiva
+#   WeakPassword    — Politica de contrasenas debil en registro
+enabled_attacks:
+  - SqlInjection
+  - BruteForce
+  - SessionFixation
+  - JwtToken
+  - XSS
+  - PathTraversal
+  - InfoLeak
+  - InsecureHeaders
+  - CORS
+  - WeakPassword
