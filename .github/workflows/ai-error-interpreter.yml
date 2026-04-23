@@ -1,0 +1,49 @@
+name: "AI Error Interpreter"
+
+on:
+  workflow_run:
+    workflows: ["*"] # Listen to all workflows
+    types:
+      - completed
+
+jobs:
+  analyze-error:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v4
+
+      - name: "Download failed run logs"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run_id = context.payload.workflow_run.id;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log(`Downloading logs for run ${run_id}...`);
+            const download = await github.rest.actions.downloadWorkflowRunLogs({
+              owner,
+              repo,
+              run_id,
+            });
+            
+            const fs = require('fs');
+            fs.writeFileSync('logs.zip', Buffer.from(download.data));
+
+      - name: "Extract logs"
+        run: |
+          mkdir -p raw-logs
+          unzip logs.zip -d raw-logs
+
+      - name: "Intelligent log processing"
+        run: |
+          node scripts/extract-error-logs.js raw-logs
+          echo "PROCESSED_LOG_PATH=extracted-errors.txt" >> $GITHUB_ENV
+
+      - name: "Debug: Show processed log"
+        run: |
+          cat extracted-errors.txt
+
+      # Next steps (AI Analysis and PR Comment) will be implemented in ST-05.2
