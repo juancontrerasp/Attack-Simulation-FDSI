@@ -18,7 +18,7 @@ A comprehensive suite of **10 specialized security tests** that simulate real-wo
 *   **Configuration**: CORS validation, HTTP Headers, and Path Traversal.
 *   **Data Integrity**: JWT validation & Information Leakage.
 
-### 2. 🤖 AI Security Agent (NEW)
+### 2. 🤖 AI Security Agent
 Automated security analysis integrated directly into your development workflow. 
 *   **Git Pre-push Hook**: Analyzes your code diffs *before* they leave your machine.
 *   **STRIDE Framework**: Powered by Azure OpenAI (GPT-4o), the agent identifies threats across Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, and Elevation of Privilege.
@@ -106,6 +106,3 @@ The AI Agent works automatically behind the scenes. When you run `git push`:
 
 ## 🛡️ Security
 This tool is for **educational and testing purposes only**. Always ensure you have explicit permission before running security simulations against any target system.
-
----
-*Created with ❤️ by the FDSI Team*
