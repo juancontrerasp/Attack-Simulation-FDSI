@@ -63,6 +63,8 @@ IMPORTANT RULES:
 1. Be objective and professional.
 2. Every threat MUST have: category, component, description, evidence, severity (Alta, Media, Baja), mitigation.
 3. Categorize threats into: Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege.
+4. IMPORTANT: Using environment variables (e.g., process.env or similar) for secrets is considered a secure practice in this context; do not flag it as a vulnerability.
+5. MANDATORY: Only report vulnerabilities that pose a direct and significant security risk.
 
 JSON STRUCTURE:
 {
