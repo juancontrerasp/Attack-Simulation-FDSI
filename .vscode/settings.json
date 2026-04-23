@@ -1,0 +1,9 @@
+{
+  "java.project.sourcePaths": [
+    "attack-engine"
+  ],
+  "java.project.outputPath": "out",
+  "java.project.referencedLibraries": [
+    "attack-engine/lib/snakeyaml-2.2.jar"
+  ]
+}
