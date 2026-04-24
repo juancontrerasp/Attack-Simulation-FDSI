@@ -117,5 +117,16 @@ fi
 log "${BOLD}Fase 3: Consolidación de reporte final${NC}"
 node scripts/combine-results.js
 
+# --- 6. Baseline & Regression Check ---
+log "${BOLD}Fase 4: Verificación de baseline de seguridad${NC}"
+node scripts/check-baseline.js
+BASELINE_EXIT=$?
+if [ $BASELINE_EXIT -ne 0 ]; then
+    echo -e "${RED}${BOLD}PIPELINE FALLIDO: Regresión de seguridad detectada (amenazas en estado 'reopened').${NC}"
+    exit $BASELINE_EXIT
+fi
+
 log "${GREEN}${BOLD}Pipeline completado exitosamente.${NC}"
 log "Reporte consolidado disponible en: ${BOLD}combined-report.json${NC}"
+log "Registry de amenazas: ${BOLD}security/threat-registry.json${NC}"
+log "Reporte de tendencias: ${BOLD}security/trend-report.json${NC}"

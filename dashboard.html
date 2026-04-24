@@ -416,6 +416,198 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ── Lifecycle Panel (US-12) ─────────────────────────────────────── */
+        .lifecycle-section {
+            margin-top: 40px;
+        }
+
+        .lifecycle-section h2 {
+            font-size: 1.3em;
+            color: #fff;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2d2d44;
+        }
+
+        .trend-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .trend-chart-wrap {
+            flex: 1;
+            min-width: 280px;
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 4px;
+            padding: 16px;
+        }
+
+        .trend-chart-title {
+            font-size: 0.82em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        #trendSvg {
+            width: 100%;
+            height: 160px;
+            display: block;
+        }
+
+        .trend-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .trend-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78em;
+            color: #aaa;
+        }
+
+        .trend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .trend-indicator-wrap {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 4px;
+            padding: 16px 20px;
+            min-width: 160px;
+            text-align: center;
+        }
+
+        .trend-indicator-label {
+            font-size: 0.78em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .trend-arrow {
+            font-size: 2.4em;
+            line-height: 1;
+        }
+
+        .trend-arrow.improving { color: #4ade80; }
+        .trend-arrow.worsening { color: #f87171; }
+        .trend-arrow.stable    { color: #888; }
+
+        .trend-indicator-sub {
+            font-size: 0.78em;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        .lifecycle-filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .lc-filter-btn {
+            padding: 4px 14px;
+            border-radius: 3px;
+            font-size: 0.82em;
+            cursor: pointer;
+            border: 1px solid #3d3d54;
+            background: #1a1a2e;
+            color: #aaa;
+        }
+
+        .lc-filter-btn.active         { border-color: #888; color: #fff; }
+        .lc-filter-btn.status-open    { border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.08); }
+        .lc-filter-btn.status-mitigated { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,0.08); }
+        .lc-filter-btn.status-accepted  { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.08); }
+        .lc-filter-btn.status-reopened  { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.08); }
+
+        .lc-row {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-left: 3px solid #3d3d54;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .lc-row.lc-open      { border-left-color: #fbbf24; }
+        .lc-row.lc-mitigated { border-left-color: #4ade80; }
+        .lc-row.lc-accepted  { border-left-color: #60a5fa; }
+        .lc-row.lc-reopened  { border-left-color: #f87171; }
+
+        .lc-status-badge {
+            padding: 2px 9px;
+            border-radius: 3px;
+            font-size: 0.72em;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .lc-status-open      { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid #fbbf24; }
+        .lc-status-mitigated { background: rgba(74,222,128,0.15);  color: #4ade80; border: 1px solid #4ade80; }
+        .lc-status-accepted  { background: rgba(96,165,250,0.15);  color: #60a5fa; border: 1px solid #60a5fa; }
+        .lc-status-reopened  { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid #f87171; }
+
+        .lc-body { flex: 1; min-width: 0; }
+
+        .lc-title {
+            font-size: 0.92em;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lc-meta {
+            font-size: 0.78em;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .lc-desc {
+            font-size: 0.82em;
+            color: #aaa;
+            line-height: 1.45;
+        }
+
+        .lc-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.7em;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .trend-dot-open      { background: #fbbf24; }
+        .trend-dot-mitigated { background: #4ade80; }
+        .trend-dot-accepted  { background: #60a5fa; }
+        .trend-dot-reopened  { background: #f87171; }
+
+        .lc-cat-label { font-weight: 400; color: #888; }
+        .lc-reason    { margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -473,6 +665,40 @@
             </div>
             <div id="strideThreatsGrid">
                 <div class="loading">Load threats-output.json to see STRIDE analysis</div>
+            </div>
+        </div>
+
+        <!-- Lifecycle Panel (US-12) -->
+        <div class="lifecycle-section">
+            <h2>Threat Lifecycle</h2>
+
+            <div class="trend-row">
+                <div class="trend-chart-wrap">
+                    <div class="trend-chart-title">Trend — threats over time</div>
+                    <svg id="trendSvg" viewBox="0 0 600 140" preserveAspectRatio="none"></svg>
+                    <div class="trend-legend">
+                        <div class="trend-legend-item"><div class="trend-dot trend-dot-open"></div>Open</div>
+                        <div class="trend-legend-item"><div class="trend-dot trend-dot-mitigated"></div>Mitigated</div>
+                        <div class="trend-legend-item"><div class="trend-dot trend-dot-accepted"></div>Accepted</div>
+                        <div class="trend-legend-item"><div class="trend-dot trend-dot-reopened"></div>Reopened</div>
+                    </div>
+                </div>
+                <div class="trend-indicator-wrap">
+                    <div class="trend-indicator-label">Security Trend</div>
+                    <div class="trend-arrow" id="trendArrow">—</div>
+                    <div class="trend-indicator-sub" id="trendSub">No data yet</div>
+                </div>
+            </div>
+
+            <div class="lifecycle-filter-bar" id="lcFilterBar">
+                <button type="button" class="lc-filter-btn active" onclick="filterLifecycle('all', this)">All</button>
+                <button type="button" class="lc-filter-btn status-open" onclick="filterLifecycle('open', this)">Open</button>
+                <button type="button" class="lc-filter-btn status-mitigated" onclick="filterLifecycle('mitigated', this)">Mitigated</button>
+                <button type="button" class="lc-filter-btn status-accepted" onclick="filterLifecycle('accepted', this)">Accepted</button>
+                <button type="button" class="lc-filter-btn status-reopened" onclick="filterLifecycle('reopened', this)">Reopened</button>
+            </div>
+            <div id="lifecycleGrid">
+                <div class="loading">Load security/threat-registry.json to see lifecycle data</div>
             </div>
         </div>
     </div>
@@ -714,6 +940,156 @@
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderFilteredThreats();
+        }
+
+        // ── Lifecycle Panel (US-12) ───────────────────────────────────────
+
+        let allRegistryThreats = [];
+        let lcActiveFilter = 'all';
+
+        window.addEventListener('load', () => {
+            setTimeout(loadLifecycleData, 900);
+        });
+
+        function loadLifecycleData() {
+            Promise.all([
+                fetch('security/threat-registry.json?' + Date.now())
+                    .then(r => r.ok ? r.json() : [])
+                    .catch(() => []),
+                fetch('security/trend-report.json?' + Date.now())
+                    .then(r => r.ok ? r.json() : [])
+                    .catch(() => [])
+            ]).then(([registry, trend]) => {
+                allRegistryThreats = Array.isArray(registry) ? registry : [];
+                renderLifecycleGrid();
+                renderTrendChart(Array.isArray(trend) ? trend : []);
+            });
+        }
+
+        function filterLifecycle(status, btn) {
+            lcActiveFilter = status;
+            document.querySelectorAll('.lc-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderLifecycleGrid();
+        }
+
+        function renderLifecycleGrid() {
+            const grid = document.getElementById('lifecycleGrid');
+            const list = lcActiveFilter === 'all'
+                ? allRegistryThreats
+                : allRegistryThreats.filter(e => e.status === lcActiveFilter);
+
+            if (list.length === 0) {
+                grid.innerHTML = '<div class="loading">No threats' +
+                    (lcActiveFilter !== 'all' ? ' with status "' + escapeHtml(lcActiveFilter) + '"' : '') +
+                    '. Run the STRIDE analysis to populate the registry.</div>';
+                return;
+            }
+
+            grid.innerHTML = list.map(e => {
+                const lastChange = e.history && e.history.length
+                    ? e.history[e.history.length - 1]
+                    : null;
+                return `
+                <div class="lc-row lc-${escapeHtml(e.status)}">
+                    <span class="lc-status-badge lc-status-${escapeHtml(e.status)}">${escapeHtml(e.status.toUpperCase())}</span>
+                    <div class="lc-body">
+                        <div class="lc-title">${escapeHtml(e.component)} <span class="lc-cat-label">— ${escapeHtml(e.category)}</span></div>
+                        <div class="lc-meta">Severity: ${escapeHtml(e.severity)} &nbsp;|&nbsp; Created: ${(e.created_at || '').slice(0, 10)} &nbsp;|&nbsp; Updated: ${(e.updated_at || '').slice(0, 10)}${lastChange && lastChange.changed_by !== 'system' ? ' &nbsp;|&nbsp; By: ' + escapeHtml(lastChange.changed_by) : ''}</div>
+                        <div class="lc-desc">${escapeHtml((e.description || '').slice(0, 120))}${(e.description || '').length > 120 ? '…' : ''}</div>
+                        ${lastChange && lastChange.reason ? '<div class="lc-meta lc-reason">Reason: ' + escapeHtml(lastChange.reason) + '</div>' : ''}
+                        <div class="lc-id">${escapeHtml(e.id)}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderTrendChart(snapshots) {
+            const svg = document.getElementById('trendSvg');
+            const W = 600, H = 140, PAD = { top: 12, right: 16, bottom: 28, left: 28 };
+            const chartW = W - PAD.left - PAD.right;
+            const chartH = H - PAD.top - PAD.bottom;
+
+            if (snapshots.length === 0) {
+                svg.innerHTML = '<text x="300" y="75" text-anchor="middle" fill="#555" font-size="13">No trend data yet — run analysis to generate snapshots</text>';
+                updateTrendIndicator(null);
+                return;
+            }
+
+            const series = [
+                { key: 'total_open',      color: '#fbbf24' },
+                { key: 'total_mitigated', color: '#4ade80' },
+                { key: 'total_accepted',  color: '#60a5fa' },
+                { key: 'total_reopened',  color: '#f87171' }
+            ];
+
+            const maxVal = Math.max(1, ...snapshots.flatMap(s =>
+                series.map(se => s[se.key] || 0)
+            ));
+
+            function px(i) {
+                return PAD.left + (snapshots.length === 1 ? chartW / 2 : (i / (snapshots.length - 1)) * chartW);
+            }
+            function py(v) {
+                return PAD.top + chartH - (v / maxVal) * chartH;
+            }
+
+            let html = '';
+
+            // Grid lines
+            [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+                const y = PAD.top + chartH * (1 - f);
+                const val = Math.round(f * maxVal);
+                html += `<line x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}" stroke="#2d2d44" stroke-width="1"/>`;
+                html += `<text x="${PAD.left - 4}" y="${y + 4}" text-anchor="end" fill="#555" font-size="9">${val}</text>`;
+            });
+
+            // Date labels (first and last)
+            const fmt = d => (d || '').slice(0, 10);
+            html += `<text x="${px(0)}" y="${H - 4}" text-anchor="middle" fill="#555" font-size="9">${escapeHtml(fmt(snapshots[0].date))}</text>`;
+            if (snapshots.length > 1) {
+                html += `<text x="${px(snapshots.length - 1)}" y="${H - 4}" text-anchor="middle" fill="#555" font-size="9">${escapeHtml(fmt(snapshots[snapshots.length - 1].date))}</text>`;
+            }
+
+            // Lines + dots
+            for (const se of series) {
+                if (snapshots.every(s => !s[se.key])) continue;
+                const pts = snapshots.map((s, i) => `${px(i)},${py(s[se.key] || 0)}`);
+                html += `<polyline points="${pts.join(' ')}" fill="none" stroke="${se.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+                snapshots.forEach((s, i) => {
+                    html += `<circle cx="${px(i)}" cy="${py(s[se.key] || 0)}" r="3" fill="${se.color}"/>`;
+                });
+            }
+
+            svg.innerHTML = html;
+            updateTrendIndicator(snapshots);
+        }
+
+        function updateTrendIndicator(snapshots) {
+            const arrow = document.getElementById('trendArrow');
+            const sub   = document.getElementById('trendSub');
+            if (!snapshots || snapshots.length < 2) {
+                arrow.textContent = '—';
+                arrow.className = 'trend-arrow stable';
+                sub.textContent = snapshots && snapshots.length === 1 ? 'Only 1 snapshot' : 'No data yet';
+                return;
+            }
+            const prev = snapshots[snapshots.length - 2];
+            const curr = snapshots[snapshots.length - 1];
+            const delta = (curr.total_open || 0) - (prev.total_open || 0);
+            if (delta < 0) {
+                arrow.textContent = '↓';
+                arrow.className = 'trend-arrow improving';
+                sub.textContent = `${Math.abs(delta)} fewer open`;
+            } else if (delta > 0) {
+                arrow.textContent = '↑';
+                arrow.className = 'trend-arrow worsening';
+                sub.textContent = `${delta} more open`;
+            } else {
+                arrow.textContent = '→';
+                arrow.className = 'trend-arrow stable';
+                sub.textContent = 'No change';
+            }
         }
     </script>
 </body>
