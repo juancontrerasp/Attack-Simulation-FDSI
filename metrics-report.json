@@ -1,0 +1,190 @@
+{
+  "generated_at": "2026-04-24T23:53:16.760Z",
+  "sources": {
+    "manual_insecure": "manual-analysis-insecure.json",
+    "manual_secure": "manual-analysis-secure.json",
+    "automated": "combined-report.json"
+  },
+  "metrics": {
+    "summary": {
+      "tp": 10,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1,
+      "recall": 0.91,
+      "f1": 0.95,
+      "strideCoverage": 83.33,
+      "coveredCategories": [
+        "Spoofing",
+        "Tampering",
+        "InformationDisclosure",
+        "DenialOfService",
+        "ElevationOfPrivilege"
+      ]
+    },
+    "perCategory": {
+      "Spoofing": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "covered": true
+      },
+      "Tampering": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "covered": true
+      },
+      "Repudiation": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "covered": false
+      },
+      "InformationDisclosure": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "covered": true
+      },
+      "DenialOfService": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "covered": true
+      },
+      "ElevationOfPrivilege": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1,
+        "covered": true
+      }
+    },
+    "perSeverity": {
+      "Alta": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 0
+      },
+      "Media": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 1
+      },
+      "Baja": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "annotatedManual": [
+      {
+        "category": "Spoofing",
+        "component": "CORS Attack",
+        "severity": "Alta",
+        "description": "No CORS restrictions. Server accepts requests from any origin, enabling cross-origin attacks.",
+        "mitigation": "Restrict CORS to specific trusted origins",
+        "_matched": true
+      },
+      {
+        "category": "Spoofing",
+        "component": "JWT Token Attack",
+        "severity": "Alta",
+        "description": "JWT tokens are not properly validated. Tampered tokens are accepted by the service.",
+        "mitigation": "Enforce strict JWT signature verification",
+        "_matched": true
+      },
+      {
+        "category": "Spoofing",
+        "component": "Session Fixation Attack",
+        "severity": "Alta",
+        "description": "Session IDs are not regenerated after authentication, allowing session fixation.",
+        "mitigation": "Regenerate session IDs on every login",
+        "_matched": true
+      },
+      {
+        "category": "Tampering",
+        "component": "SQL Injection Attack",
+        "severity": "Alta",
+        "description": "Login endpoint is vulnerable to SQL injection; attackers can bypass authentication.",
+        "mitigation": "Use parameterized queries / prepared statements",
+        "_matched": true
+      },
+      {
+        "category": "Tampering",
+        "component": "XSS Attack",
+        "severity": "Alta",
+        "description": "User input is reflected without encoding, enabling stored/reflected XSS.",
+        "mitigation": "Sanitize and HTML-encode all user-controlled output",
+        "_matched": true
+      },
+      {
+        "category": "Repudiation",
+        "component": "Audit Log Bypass",
+        "severity": "Media",
+        "description": "No audit logs exist for authentication attempts, making forensic analysis impossible.",
+        "mitigation": "Implement comprehensive audit logging with tamper-evident storage",
+        "_matched": false
+      },
+      {
+        "category": "InformationDisclosure",
+        "component": "Info Leak Attack",
+        "severity": "Media",
+        "description": "Different error messages for valid vs invalid usernames allow user enumeration.",
+        "mitigation": "Return generic error messages for all authentication failures",
+        "_matched": true
+      },
+      {
+        "category": "InformationDisclosure",
+        "component": "Insecure HTTP Headers Attack",
+        "severity": "Media",
+        "description": "Critical security headers (X-Frame-Options, X-Content-Type-Options, HSTS) are missing.",
+        "mitigation": "Add all recommended HTTP security headers",
+        "_matched": true
+      },
+      {
+        "category": "InformationDisclosure",
+        "component": "Path Traversal Attack",
+        "severity": "Alta",
+        "description": "File paths are not validated, allowing traversal to sensitive system files.",
+        "mitigation": "Validate and canonicalize all file paths before use",
+        "_matched": true
+      },
+      {
+        "category": "DenialOfService",
+        "component": "Brute Force Attack",
+        "severity": "Media",
+        "description": "No rate limiting or account lockout on login endpoint, enabling brute-force attacks.",
+        "mitigation": "Implement rate limiting and progressive account lockout",
+        "_matched": true
+      },
+      {
+        "category": "ElevationOfPrivilege",
+        "component": "Weak Password Attack",
+        "severity": "Alta",
+        "description": "No password complexity requirements; trivial passwords like '123456' are accepted.",
+        "mitigation": "Enforce strong password policy with complexity and length requirements",
+        "_matched": true
+      }
+    ],
+    "fpThreats": []
+  }
+}

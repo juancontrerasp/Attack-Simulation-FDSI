@@ -1,429 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attack Simulation Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Dashboard – STRIDE Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f0f1e;
-            color: #e0e0e0;
-            padding: 20px;
-            min-height: 100vh;
-        }
+    :root {
+      --bg: #0d0d1a;
+      --surface: #1a1a2e;
+      --border: #2d2d44;
+      --text: #e2e8f0;
+      --muted: #888;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --cyan: #22d3ee;
+      --accent: #818cf8;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-        header {
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #2d2d44;
-        }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { font-size: 1.25rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+    .logo span { font-size: 1.5rem; }
+    .header-meta { color: var(--muted); font-size: 0.82rem; }
+    #ciStatus {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 8px 14px; font-size: 0.85rem;
+    }
+    .ci-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .ci-dot.pass { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .ci-dot.fail { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    .ci-dot.unknown { background: var(--muted); }
 
-        h1 {
-            font-size: 2em;
-            color: #ffffff;
-            margin-bottom: 8px;
-        }
+    main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
 
-        .subtitle {
-            color: #888;
-            font-size: 0.95em;
-        }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+    .card .c-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .card .c-value { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+    .c-value.green  { color: var(--green); }
+    .c-value.yellow { color: var(--yellow); }
+    .c-value.red    { color: var(--red); }
+    .c-value.cyan   { color: var(--cyan); }
+    .c-value.white  { color: #fff; }
 
-        .timestamp {
-            color: #666;
-            font-size: 0.85em;
-            margin-top: 10px;
-        }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
 
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
+    .two-col { display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
 
-        button {
-            background: #2d2d44;
-            color: #e0e0e0;
-            border: 1px solid #3d3d54;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.2s ease;
-        }
+    .chart-wrap { max-width: 420px; margin: 0 auto; }
 
-        button:hover {
-            background: #3d3d54;
-            border-color: #4d4d64;
-        }
+    .filters {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px;
+    }
+    .filters input, .filters select {
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px; padding: 8px 12px; font-size: 0.88rem;
+      outline: none;
+    }
+    .filters input { flex: 1; min-width: 200px; }
+    .filters input:focus, .filters select:focus { border-color: var(--accent); }
+    .filters label { font-size: 0.82rem; color: var(--muted); }
 
-        button:active {
-            transform: translateY(1px);
-        }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 600px; }
+    thead th {
+      text-align: left; padding: 10px 14px;
+      color: var(--muted); font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase; font-size: 0.74rem; letter-spacing: 0.5px;
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    thead th:hover { color: var(--text); }
+    thead th .sort-icon { margin-left: 4px; opacity: 0.4; }
+    thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    tbody tr { border-bottom: 1px solid #1e1e30; transition: background 0.15s; }
+    tbody tr:hover { background: rgba(129,140,248,0.05); }
+    tbody td { padding: 12px 14px; vertical-align: top; }
+    .threat-desc { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+    .no-results { text-align: center; padding: 40px; color: var(--muted); font-size: 0.9rem; }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
+    .badge {
+      display: inline-block; padding: 3px 9px;
+      border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+    }
+    .badge-Alta    { background: rgba(248,113,113,.15); color: var(--red);    border: 1px solid var(--red); }
+    .badge-Media   { background: rgba(250,204, 21,.15); color: var(--yellow); border: 1px solid var(--yellow); }
+    .badge-Baja    { background: rgba( 74,222,128,.15); color: var(--green);  border: 1px solid var(--green); }
+    .badge-cat     { background: rgba(129,140,248,.1);  color: var(--accent); border: 1px solid var(--accent); }
+    .badge-confirm { background: rgba( 34,211,238,.1);  color: var(--cyan);   border: 1px solid var(--cyan); }
+    .badge-unconf  { background: rgba(136,136,136,.1);  color: var(--muted);  border: 1px solid var(--border); }
 
-        .stat-card {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-radius: 4px;
-            padding: 20px;
-        }
+    .stride-bars { display: flex; flex-direction: column; gap: 10px; }
+    .stride-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.82rem; margin-bottom: 4px; color: var(--text);
+    }
+    .stride-label .cnt { color: var(--muted); }
+    .progress { background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
 
-        .stat-label {
-            font-size: 0.85em;
-            color: #888;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+    .ci-panel { display: flex; flex-direction: column; gap: 12px; }
+    .ci-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .ci-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+    .ci-info { flex: 1; }
+    .ci-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+    .ci-detail { font-size: 0.82rem; color: var(--muted); }
+    .ci-badge { font-size: 0.78rem; padding: 2px 8px; border-radius: 3px; align-self: flex-start; }
+    .ci-badge.pass { background: rgba(74,222,128,.15); color: var(--green); border: 1px solid var(--green); }
+    .ci-badge.info { background: rgba(34,211,238,.1); color: var(--cyan); border: 1px solid var(--cyan); }
 
-        .stat-value {
-            font-size: 2em;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
+    .error-box { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .error-box .error-icon { font-size: 3rem; margin-bottom: 16px; }
+    .error-box p { font-size: 0.9rem; line-height: 1.6; }
+    .error-box code { background: var(--border); padding: 2px 6px; border-radius: 3px; font-size: 0.85rem; }
 
-        .stat-value.secure {
-            color: #4ade80;
-        }
-
-        .stat-value.vulnerable {
-            color: #f87171;
-        }
-
-        .stat-value.neutral {
-            color: #60a5fa;
-        }
-
-        .system-card {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-radius: 4px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .system-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #2d2d44;
-        }
-
-        .system-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .system-url {
-            color: #888;
-            font-size: 0.85em;
-            margin-top: 4px;
-        }
-
-        .system-status {
-            padding: 6px 16px;
-            border-radius: 3px;
-            font-weight: 500;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .system-status.secure {
-            background: rgba(74, 222, 128, 0.15);
-            color: #4ade80;
-            border: 1px solid #4ade80;
-        }
-
-        .system-status.vulnerable {
-            background: rgba(248, 113, 113, 0.15);
-            color: #f87171;
-            border: 1px solid #f87171;
-        }
-
-        .attack-result {
-            background: #141420;
-            border-left: 3px solid #2d2d44;
-            border-radius: 3px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .attack-result.secure {
-            border-left-color: #4ade80;
-        }
-
-        .attack-result.vulnerable {
-            border-left-color: #f87171;
-        }
-
-        .attack-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .attack-name {
-            font-size: 1em;
-            font-weight: 500;
-            color: #fff;
-        }
-
-        .attack-status {
-            padding: 3px 10px;
-            border-radius: 2px;
-            font-size: 0.8em;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-        }
-
-        .attack-status.secure {
-            background: rgba(74, 222, 128, 0.15);
-            color: #4ade80;
-        }
-
-        .attack-status.vulnerable {
-            background: rgba(248, 113, 113, 0.15);
-            color: #f87171;
-        }
-
-        .attack-details {
-            color: #aaa;
-            font-size: 0.88em;
-            line-height: 1.5;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 3px;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-
-        .attack-details::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .attack-details::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .attack-details::-webkit-scrollbar-thumb {
-            background: #3d3d54;
-            border-radius: 3px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .error {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid #f87171;
-            border-radius: 4px;
-            padding: 20px;
-            color: #f87171;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .info-box {
-            background: rgba(96, 165, 250, 0.1);
-            border: 1px solid #60a5fa;
-            border-radius: 4px;
-            padding: 12px;
-            color: #60a5fa;
-            margin-bottom: 20px;
-            font-size: 0.88em;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.5em;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    #loadingMsg { text-align: center; padding: 60px; color: var(--muted); }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Attack Simulation Dashboard</h1>
-            <div class="subtitle">Security Testing Monitor</div>
-            <div class="timestamp" id="lastUpdate">Last updated: Never</div>
-        </header>
 
-        <div class="controls">
-            <button onclick="loadResults()">Refresh Data</button>
-            <button onclick="toggleAutoRefresh()">Auto-Refresh: <span id="autoRefreshStatus">OFF</span></button>
-            <button onclick="clearData()">Clear Display</button>
-        </div>
+<header>
+  <div class="logo"><span>🛡️</span> Security Dashboard</div>
+  <div class="header-meta" id="reportTimestamp">Loading…</div>
+  <div id="ciStatus">
+    <div class="ci-dot unknown" id="ciDot"></div>
+    <span id="ciStatusText">CI/CD Status</span>
+  </div>
+</header>
 
-        <div class="info-box">
-            Run AttackEngine to generate results.json, then refresh this dashboard to see the latest attack data.
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Attacks</div>
-                <div class="stat-value neutral" id="totalAttacks">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Vulnerabilities</div>
-                <div class="stat-value vulnerable" id="vulnerabilitiesFound">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Passed Tests</div>
-                <div class="stat-value secure" id="passedTests">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Status</div>
-                <div class="stat-value neutral" id="overallStatus">-</div>
-            </div>
-        </div>
-
-        <div id="systemsGrid">
-            <div class="loading">Waiting for data</div>
-        </div>
+<main>
+  <div id="loadingMsg">⏳ Loading combined-report.json…</div>
+  <div id="content" style="display:none">
+    <div class="cards" id="metricCards"></div>
+    <div class="two-col">
+      <section>
+        <h2>📡 STRIDE Radar</h2>
+        <div class="chart-wrap"><canvas id="radarChart"></canvas></div>
+      </section>
+      <section>
+        <h2>📊 STRIDE Coverage</h2>
+        <div class="stride-bars" id="strideBars"></div>
+      </section>
     </div>
+    <section>
+      <h2>🔍 Threats</h2>
+      <div class="filters">
+        <input type="text" id="searchBox" placeholder="🔍 Search component, category, description…" oninput="applyFilters()">
+        <label>Severity:</label>
+        <select id="sevFilter" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+        <label>Category:</label>
+        <select id="catFilter" onchange="applyFilters()">
+          <option value="">All</option>
+        </select>
+        <label>Confirmed:</label>
+        <select id="confFilter" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="yes">Confirmed</option>
+          <option value="no">Not confirmed</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="threatsTable">
+          <thead>
+            <tr>
+              <th onclick="sortBy('category')">Category <span class="sort-icon">↕</span></th>
+              <th onclick="sortBy('component')">Component <span class="sort-icon">↕</span></th>
+              <th onclick="sortBy('severity')">Severity <span class="sort-icon">↕</span></th>
+              <th>Description</th>
+              <th onclick="sortBy('confirmed')">Confirmed <span class="sort-icon">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="threatsBody"></tbody>
+        </table>
+      </div>
+      <div class="no-results" id="noResults" style="display:none">No threats match your filters.</div>
+    </section>
+    <section>
+      <h2>⚙️ CI/CD Pipeline Status</h2>
+      <div class="ci-panel" id="ciPanel"></div>
+    </section>
+  </div>
+</main>
 
-    <script>
-        let autoRefreshInterval = null;
-        let lastData = null;
+<script>
+var allThreats = [];
+var currentSort = { field: null, asc: true };
 
-        function loadResults() {
-            Promise.resolve({ok: true, json: () => Promise.resolve({"timestamp": "2026-03-24T18:40:04.50028599", "systems": [{"name": "Target System", "url": "http://localhost:8080", "attacks": [{"name": "SQL Injection", "vulnerable": false, "details": "No SQL injection vulnerability detected. Tested 6 payloads"}, {"name": "Brute Force", "vulnerable": true, "details": "No rate limiting. Tested 100 passwords without blocking"}, {"name": "Information Leakage", "vulnerable": false, "details": "No information leakage. Responses are consistent for both valid and invalid usernames"}]}]})})
-                .then(response => {
-                    if (!response.ok) throw new Error('No results file found');
-                    return response.json();
-                })
-                .then(data => {
-                    lastData = data;
-                    displayResults(data);
-                    updateTimestamp();
-                })
-                .catch(error => {
-                    document.getElementById('systemsGrid').innerHTML = 
-                        `<div class="error">${error.message}<br><br>Run AttackEngine to generate results.json</div>`;
-                });
+var STRIDE_CATEGORIES = [
+  'Spoofing', 'Tampering', 'Repudiation',
+  'InformationDisclosure', 'DenialOfService', 'ElevationOfPrivilege'
+];
+
+var CAT_ALIASES = {
+  'information disclosure': 'InformationDisclosure',
+  'informationdisclosure':  'InformationDisclosure',
+  'denial of service':      'DenialOfService',
+  'denialofservice':        'DenialOfService',
+  'elevation of privilege': 'ElevationOfPrivilege',
+  'elevationofprivilege':   'ElevationOfPrivilege',
+};
+function normCat(cat) {
+  var k = (cat || '').trim().toLowerCase().replace(/\s+/g,'');
+  return CAT_ALIASES[k] || cat;
+}
+
+Promise.resolve({ok: true, json: function() { return Promise.resolve({"timestamp":"2026-04-23T18:23:19.916Z","executive_summary":{"total_detected":10,"total_confirmed":2,"total_unconfirmed":0,"confirmation_rate_percent":20,"system_status":"available"},"stride_analysis":{"Spoofing":[{"category":"Spoofing","component":"CORS Attack","description":"Critical CORS vulnerability. Server allows requests from ANY origin (*). This enables cross-site attacks and data theft.","evidence":"Response contains 'Access-Control-Allow-Origin: *'","severity":"Alta","mitigation":"Restrict CORS to specific trusted origins."},{"category":"Spoofing","component":"JWT Token Attack","description":"JWT token validation vulnerability. Tampered token accepted. Signature not properly verified.","evidence":"Tampered token accepted without proper validation.","severity":"Alta","mitigation":"Ensure proper signature verification for JWT tokens."},{"category":"Spoofing","component":"Session Fixation Attack","description":"Session fixation vulnerability detected. Session ID not regenerated after authentication.","evidence":"Same session ID used before and after login.","severity":"Alta","mitigation":"Regenerate session ID upon successful login."}],"Tampering":[{"category":"Tampering","component":"SQL Injection Attack","description":"SQL injection successful using payload. Response indicates successful authentication.","evidence":"Response contains 'success' or 'token' after injection payload.","severity":"Alta","mitigation":"Use prepared statements and parameterized queries to prevent SQL injection."},{"category":"Tampering","component":"XSS Attack","description":"XSS vulnerability detected. Payload reflected in response without proper encoding.","evidence":"Payload '<script>alert('XSS')</script>' reflected in response.","severity":"Alta","mitigation":"Sanitize and encode user inputs to prevent XSS."}],"InformationDisclosure":[{"category":"Information Disclosure","component":"Info Leak Attack","description":"Information leakage detected. Different responses allow user enumeration.","evidence":"Invalid user response differs from valid user response.","severity":"Media","mitigation":"Ensure consistent responses for valid and invalid usernames."},{"category":"Information Disclosure","component":"Insecure HTTP Headers Attack","description":"Missing security headers increase risk of attacks.","evidence":"Missing headers: X-Frame-Options, X-Content-Type-Options, etc.","severity":"Media","mitigation":"Implement essential security headers in HTTP responses."},{"category":"Information Disclosure","component":"Path Traversal Attack","description":"Path traversal vulnerability detected. System files accessible.","evidence":"Response contains sensitive file content.","severity":"Alta","mitigation":"Validate and sanitize file paths to prevent path traversal."}],"DenialOfService":[{"category":"Denial of Service","component":"Brute Force Attack","description":"Rate limiting detected. Blocked after multiple attempts.","evidence":"Response indicates rate limiting after several login attempts.","severity":"Media","mitigation":"Implement account lockout mechanisms and rate limiting."}],"ElevationOfPrivilege":[{"category":"Elevation of Privilege","component":"Weak Password Attack","description":"Weak password policy detected. Weak passwords accepted.","evidence":"Accepted weak password: '123456'.","severity":"Alta","mitigation":"Enforce strong password policies requiring complexity."}]},"dynamic_validation":[{"attack_name":"SQL Injection","attack_class":"SqlInjectionAttack","vulnerable":true,"evidence":"Detected payload reflection","response_code":200}],"combined_threats":[{"category":"Spoofing","component":"CORS Attack","description":"Critical CORS vulnerability. Server allows requests from ANY origin (*). This enables cross-site attacks and data theft.","evidence":"Response contains 'Access-Control-Allow-Origin: *'","severity":"Alta","mitigation":"Restrict CORS to specific trusted origins.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null},{"category":"Spoofing","component":"JWT Token Attack","description":"JWT token validation vulnerability. Tampered token accepted. Signature not properly verified.","evidence":"Tampered token accepted without proper validation.","severity":"Alta","mitigation":"Ensure proper signature verification for JWT tokens.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null},{"category":"Spoofing","component":"Session Fixation Attack","description":"Session fixation vulnerability detected. Session ID not regenerated after authentication.","evidence":"Same session ID used before and after login.","severity":"Alta","mitigation":"Regenerate session ID upon successful login.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null},{"category":"Tampering","component":"SQL Injection Attack","description":"SQL injection successful using payload. Response indicates successful authentication.","evidence":"Response contains 'success' or 'token' after injection payload.","severity":"Alta","mitigation":"Use prepared statements and parameterized queries to prevent SQL injection.","confirmed":true,"confirmation_reason":null,"dynamic_validation":{"attack":"SQL Injection","evidence":"Detected payload reflection","response_code":200}},{"category":"Tampering","component":"XSS Attack","description":"XSS vulnerability detected. Payload reflected in response without proper encoding.","evidence":"Payload '<script>alert('XSS')</script>' reflected in response.","severity":"Alta","mitigation":"Sanitize and encode user inputs to prevent XSS.","confirmed":true,"confirmation_reason":null,"dynamic_validation":{"attack":"SQL Injection","evidence":"Detected payload reflection","response_code":200}},{"category":"InformationDisclosure","component":"Info Leak Attack","description":"Information leakage detected. Different responses allow user enumeration.","evidence":"Invalid user response differs from valid user response.","severity":"Media","mitigation":"Ensure consistent responses for valid and invalid usernames.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null},{"category":"InformationDisclosure","component":"Insecure HTTP Headers Attack","description":"Missing security headers increase risk of attacks.","evidence":"Missing headers: X-Frame-Options, X-Content-Type-Options, etc.","severity":"Media","mitigation":"Implement essential security headers in HTTP responses.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null},{"category":"InformationDisclosure","component":"Path Traversal Attack","description":"Path traversal vulnerability detected. System files accessible.","evidence":"Response contains sensitive file content.","severity":"Alta","mitigation":"Validate and sanitize file paths to prevent path traversal.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null},{"category":"DenialOfService","component":"Brute Force Attack","description":"Rate limiting detected. Blocked after multiple attempts.","evidence":"Response indicates rate limiting after several login attempts.","severity":"Media","mitigation":"Implement account lockout mechanisms and rate limiting.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null},{"category":"ElevationOfPrivilege","component":"Weak Password Attack","description":"Weak password policy detected. Weak passwords accepted.","evidence":"Accepted weak password: '123456'.","severity":"Alta","mitigation":"Enforce strong password policies requiring complexity.","confirmed":null,"confirmation_reason":"no_dynamic_attack_mapped_or_executed","dynamic_validation":null}]}); }})
+  .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(function(data) { initDashboard(data); })
+  .catch(function(err) {
+    document.getElementById('loadingMsg').innerHTML =
+      '<div class="error-box"><div class="error-icon">⚠️</div><p>Could not load <code>combined-report.json</code><br><br>' +
+      err.message + '<br><br>Use <code>dashboard-standalone.html</code> to view without a web server.</p></div>';
+  });
+
+function initDashboard(data) {
+  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('content').style.display = '';
+
+  var ts = data.timestamp || new Date().toISOString();
+  document.getElementById('reportTimestamp').textContent = 'Report: ' + new Date(ts).toLocaleString();
+
+  var threats = (data.combined_threats || []).map(function(t) {
+    return Object.assign({}, t, { category: normCat(t.category) });
+  });
+  allThreats = threats;
+
+  renderCards(data, threats);
+  renderRadar(threats);
+  renderStrideBars(threats);
+  renderCIPanel(data);
+  populateCategoryFilter(threats);
+  renderTable(threats);
+}
+
+function renderCards(data, threats) {
+  var total = threats.length;
+  var alta  = threats.filter(function(t){ return t.severity === 'Alta'; }).length;
+  var media = threats.filter(function(t){ return t.severity === 'Media'; }).length;
+  var baja  = threats.filter(function(t){ return t.severity === 'Baja'; }).length;
+  var conf  = threats.filter(function(t){ return t.confirmed === true; }).length;
+  var covCats = STRIDE_CATEGORIES.filter(function(c){
+    return threats.some(function(t){ return t.category === c; });
+  }).length;
+
+  var cards = [
+    { label: 'Total Threats',   value: total, cls: 'white' },
+    { label: 'Alta',            value: alta,  cls: 'red' },
+    { label: 'Media',           value: media, cls: 'yellow' },
+    { label: 'Baja',            value: baja,  cls: 'green' },
+    { label: 'Confirmed',       value: conf,  cls: 'cyan' },
+    { label: 'STRIDE Coverage', value: Math.round(covCats/6*100)+'%', cls: 'cyan' },
+  ];
+  document.getElementById('metricCards').innerHTML = cards.map(function(c){
+    return '<div class="card"><div class="c-label">'+c.label+'</div><div class="c-value '+c.cls+'">'+c.value+'</div></div>';
+  }).join('');
+
+  var dot = document.getElementById('ciDot');
+  var ciText = document.getElementById('ciStatusText');
+  if (alta === 0) {
+    dot.className = 'ci-dot pass';
+    ciText.textContent = 'Baseline OK';
+  } else {
+    dot.className = 'ci-dot fail';
+    ciText.textContent = alta + ' High threat(s)';
+  }
+}
+
+var radarChart = null;
+function renderRadar(threats) {
+  var counts = STRIDE_CATEGORIES.map(function(cat){
+    return threats.filter(function(t){ return t.category === cat; }).length;
+  });
+  var ctx = document.getElementById('radarChart').getContext('2d');
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: STRIDE_CATEGORIES,
+      datasets: [{
+        label: 'Threats',
+        data: counts,
+        backgroundColor: 'rgba(129,140,248,0.15)',
+        borderColor: '#818cf8',
+        pointBackgroundColor: '#818cf8',
+        borderWidth: 2,
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      scales: {
+        r: {
+          min: 0,
+          ticks: { color: '#888', stepSize: 1, precision: 0 },
+          grid: { color: '#2d2d44' },
+          pointLabels: { color: '#ccc', font: { size: 11 } },
+          angleLines: { color: '#2d2d44' }
         }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
 
-        function displayResults(data) {
-            const systemsGrid = document.getElementById('systemsGrid');
-            systemsGrid.innerHTML = '';
+function renderStrideBars(threats) {
+  var counts = STRIDE_CATEGORIES.map(function(c){
+    return threats.filter(function(t){ return t.category === c; }).length;
+  });
+  var maxCount = Math.max.apply(null, counts.concat([1]));
+  document.getElementById('strideBars').innerHTML = STRIDE_CATEGORIES.map(function(cat, i){
+    var count = counts[i];
+    var pct = Math.round(count / maxCount * 100);
+    var color = count === 0 ? '#2d2d44' : count >= 3 ? '#f87171' : count >= 2 ? '#facc15' : '#4ade80';
+    return '<div class="stride-row">' +
+      '<div class="stride-label"><span>'+cat+'</span><span class="cnt">'+count+' threat'+(count!==1?'s':'')+'</span></div>' +
+      '<div class="progress"><div class="progress-fill" style="width:'+pct+'%;background:'+color+'"></div></div>' +
+      '</div>';
+  }).join('');
+}
 
-            let totalAttacks = 0;
-            let vulnerabilitiesFound = 0;
-            let passedTests = 0;
+function renderCIPanel(data) {
+  var sum = data.executive_summary || {};
+  var ts  = data.timestamp || new Date().toISOString();
+  var items = [
+    { icon:'🔄', title:'Last Analysis Run',         detail:'STRIDE + dynamic validation via diff-analyzer',                     badge:'info', badgeText: new Date(ts).toLocaleString() },
+    { icon:'📊', title:'Threat Detection',           detail:(sum.total_detected||0)+' detected · '+(sum.total_confirmed||0)+' confirmed dynamically', badge:'pass', badgeText: sum.system_status||'N/A' },
+    { icon:'🔒', title:'Baseline Validation',        detail:'Automated check against security/baseline.json on every push',     badge:'pass', badgeText:'Configured' },
+    { icon:'📦', title:'Artifact: threats-output.json', detail:'Published on every CI run (retention: 30 days)',                badge:'info', badgeText:'Automated' },
+  ];
+  document.getElementById('ciPanel').innerHTML = items.map(function(i){
+    return '<div class="ci-item"><div class="ci-icon">'+i.icon+'</div><div class="ci-info"><div class="ci-title">'+i.title+'</div><div class="ci-detail">'+i.detail+'</div></div><span class="ci-badge '+i.badge+'">'+i.badgeText+'</span></div>';
+  }).join('');
+}
 
-            data.systems.forEach(system => {
-                totalAttacks += system.attacks.length;
-                const vulnerableCount = system.attacks.filter(a => a.vulnerable).length;
-                vulnerabilitiesFound += vulnerableCount;
-                passedTests += system.attacks.length - vulnerableCount;
+function populateCategoryFilter(threats) {
+  var cats = [];
+  threats.forEach(function(t){ if (cats.indexOf(t.category) === -1) cats.push(t.category); });
+  cats.sort();
+  var sel = document.getElementById('catFilter');
+  cats.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+}
 
-                const isSecure = vulnerableCount === 0;
-                const card = document.createElement('div');
-                card.className = 'system-card';
-                card.innerHTML = `
-                    <div class="system-header">
-                        <div>
-                            <div class="system-title">${system.name}</div>
-                            <div class="system-url">${system.url}</div>
-                        </div>
-                        <div class="system-status ${isSecure ? 'secure' : 'vulnerable'}">
-                            ${isSecure ? 'SECURE' : 'VULNERABLE'}
-                        </div>
-                    </div>
-                    ${system.attacks.map(attack => `
-                        <div class="attack-result ${attack.vulnerable ? 'vulnerable' : 'secure'}">
-                            <div class="attack-header">
-                                <div class="attack-name">${attack.name}</div>
-                                <div class="attack-status ${attack.vulnerable ? 'vulnerable' : 'secure'}">
-                                    ${attack.vulnerable ? 'VULNERABLE' : 'SECURE'}
-                                </div>
-                            </div>
-                            <div class="attack-details">${attack.details}</div>
-                        </div>
-                    `).join('')}
-                `;
-                systemsGrid.appendChild(card);
-            });
+function renderTable(threats) {
+  var tbody = document.getElementById('threatsBody');
+  var noRes = document.getElementById('noResults');
+  if (threats.length === 0) {
+    tbody.innerHTML = '';
+    noRes.style.display = '';
+    return;
+  }
+  noRes.style.display = 'none';
+  tbody.innerHTML = threats.map(function(t){
+    var confBadge = t.confirmed === true
+      ? '<span class="badge badge-confirm">✓ Confirmed</span>'
+      : '<span class="badge badge-unconf">Unconfirmed</span>';
+    return '<tr>' +
+      '<td><span class="badge badge-cat">'+t.category+'</span></td>' +
+      '<td><strong>'+(t.component||'—')+'</strong></td>' +
+      '<td><span class="badge badge-'+(t.severity||'')+'">'+t.severity+'</span></td>' +
+      '<td><span>'+(t.description||'—')+'</span>'+(t.mitigation?'<div class="threat-desc">💡 '+t.mitigation+'</div>':'')+'</td>' +
+      '<td>'+confBadge+'</td></tr>';
+  }).join('');
+}
 
-            document.getElementById('totalAttacks').textContent = totalAttacks;
-            document.getElementById('vulnerabilitiesFound').textContent = vulnerabilitiesFound;
-            document.getElementById('passedTests').textContent = passedTests;
-            
-            const overallStatus = document.getElementById('overallStatus');
-            if (vulnerabilitiesFound === 0) {
-                overallStatus.textContent = 'SECURE';
-                overallStatus.className = 'stat-value secure';
-            } else {
-                overallStatus.textContent = 'AT RISK';
-                overallStatus.className = 'stat-value vulnerable';
-            }
-        }
+function applyFilters() {
+  var q    = document.getElementById('searchBox').value.toLowerCase();
+  var sev  = document.getElementById('sevFilter').value;
+  var cat  = document.getElementById('catFilter').value;
+  var conf = document.getElementById('confFilter').value;
 
-        function updateTimestamp() {
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = 
-                `Last updated: ${now.toLocaleTimeString()}`;
-        }
+  var filtered = allThreats.filter(function(t){
+    if (sev && t.severity !== sev) return false;
+    if (cat && t.category !== cat) return false;
+    if (conf === 'yes' && t.confirmed !== true) return false;
+    if (conf === 'no'  && t.confirmed === true) return false;
+    if (q) {
+      var haystack = [t.category, t.component, t.description, t.mitigation].join(' ').toLowerCase();
+      if (haystack.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
 
-        function toggleAutoRefresh() {
-            const statusEl = document.getElementById('autoRefreshStatus');
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-                statusEl.textContent = 'OFF';
-            } else {
-                autoRefreshInterval = setInterval(loadResults, 5000);
-                statusEl.textContent = 'ON';
-                loadResults();
-            }
-        }
+  if (currentSort.field) filtered = sortThreats(filtered, currentSort.field, currentSort.asc);
+  renderTable(filtered);
+}
 
-        function clearData() {
-            document.getElementById('systemsGrid').innerHTML = 
-                '<div class="loading">Waiting for data</div>';
-            document.getElementById('totalAttacks').textContent = '0';
-            document.getElementById('vulnerabilitiesFound').textContent = '0';
-            document.getElementById('passedTests').textContent = '0';
-            document.getElementById('overallStatus').textContent = '-';
-            document.getElementById('lastUpdate').textContent = 'Last updated: Never';
-        }
+var SEV_ORDER = { Alta: 0, Media: 1, Baja: 2 };
+function sortThreats(threats, field, asc) {
+  return threats.slice().sort(function(a, b){
+    var va = a[field], vb = b[field];
+    if (field === 'severity')   { va = SEV_ORDER[va]||9; vb = SEV_ORDER[vb]||9; }
+    else if (field === 'confirmed') { va = va===true?0:1; vb = vb===true?0:1; }
+    else { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ?  1 : -1;
+    return 0;
+  });
+}
 
-        window.addEventListener('load', () => {
-            setTimeout(loadResults, 500);
-        });
-    </script>
+function sortBy(field) {
+  if (currentSort.field === field) currentSort.asc = !currentSort.asc;
+  else { currentSort.field = field; currentSort.asc = true; }
+  document.querySelectorAll('thead th').forEach(function(th){ th.classList.remove('sorted'); });
+  document.querySelectorAll('thead th').forEach(function(th){
+    if (th.getAttribute('onclick') === "sortBy('"+field+"')") {
+      th.classList.add('sorted');
+      th.querySelector('.sort-icon').textContent = currentSort.asc ? '↑' : '↓';
+    }
+  });
+  applyFilters();
+}
+</script>
 </body>
 </html>

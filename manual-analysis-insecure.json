@@ -1,0 +1,86 @@
+{
+  "analysis_type": "manual",
+  "case": "insecure",
+  "description": "Manual STRIDE analysis of the insecure system (AWS Login Service without security controls)",
+  "analyst": "Security Team",
+  "date": "2026-04-24",
+  "threats": [
+    {
+      "category": "Spoofing",
+      "component": "CORS Attack",
+      "severity": "Alta",
+      "description": "No CORS restrictions. Server accepts requests from any origin, enabling cross-origin attacks.",
+      "mitigation": "Restrict CORS to specific trusted origins"
+    },
+    {
+      "category": "Spoofing",
+      "component": "JWT Token Attack",
+      "severity": "Alta",
+      "description": "JWT tokens are not properly validated. Tampered tokens are accepted by the service.",
+      "mitigation": "Enforce strict JWT signature verification"
+    },
+    {
+      "category": "Spoofing",
+      "component": "Session Fixation Attack",
+      "severity": "Alta",
+      "description": "Session IDs are not regenerated after authentication, allowing session fixation.",
+      "mitigation": "Regenerate session IDs on every login"
+    },
+    {
+      "category": "Tampering",
+      "component": "SQL Injection Attack",
+      "severity": "Alta",
+      "description": "Login endpoint is vulnerable to SQL injection; attackers can bypass authentication.",
+      "mitigation": "Use parameterized queries / prepared statements"
+    },
+    {
+      "category": "Tampering",
+      "component": "XSS Attack",
+      "severity": "Alta",
+      "description": "User input is reflected without encoding, enabling stored/reflected XSS.",
+      "mitigation": "Sanitize and HTML-encode all user-controlled output"
+    },
+    {
+      "category": "Repudiation",
+      "component": "Audit Log Bypass",
+      "severity": "Media",
+      "description": "No audit logs exist for authentication attempts, making forensic analysis impossible.",
+      "mitigation": "Implement comprehensive audit logging with tamper-evident storage"
+    },
+    {
+      "category": "InformationDisclosure",
+      "component": "Info Leak Attack",
+      "severity": "Media",
+      "description": "Different error messages for valid vs invalid usernames allow user enumeration.",
+      "mitigation": "Return generic error messages for all authentication failures"
+    },
+    {
+      "category": "InformationDisclosure",
+      "component": "Insecure HTTP Headers Attack",
+      "severity": "Media",
+      "description": "Critical security headers (X-Frame-Options, X-Content-Type-Options, HSTS) are missing.",
+      "mitigation": "Add all recommended HTTP security headers"
+    },
+    {
+      "category": "InformationDisclosure",
+      "component": "Path Traversal Attack",
+      "severity": "Alta",
+      "description": "File paths are not validated, allowing traversal to sensitive system files.",
+      "mitigation": "Validate and canonicalize all file paths before use"
+    },
+    {
+      "category": "DenialOfService",
+      "component": "Brute Force Attack",
+      "severity": "Media",
+      "description": "No rate limiting or account lockout on login endpoint, enabling brute-force attacks.",
+      "mitigation": "Implement rate limiting and progressive account lockout"
+    },
+    {
+      "category": "ElevationOfPrivilege",
+      "component": "Weak Password Attack",
+      "severity": "Alta",
+      "description": "No password complexity requirements; trivial passwords like '123456' are accepted.",
+      "mitigation": "Enforce strong password policy with complexity and length requirements"
+    }
+  ]
+}

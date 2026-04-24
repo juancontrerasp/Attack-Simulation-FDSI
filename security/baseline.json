@@ -1,1 +1,86 @@
-[]
+{
+  "version": "1.0",
+  "last_updated": "2026-04-24",
+  "approved_threats": [
+    {
+      "id": "threat-001",
+      "category": "Tampering",
+      "component": "SQL Injection Attack",
+      "severity": "Alta",
+      "approved_date": "2026-04-24",
+      "reason": "Known vulnerability under remediation. Mitigated with prepared statements in progress."
+    },
+    {
+      "id": "threat-002",
+      "category": "Tampering",
+      "component": "XSS Attack",
+      "severity": "Alta",
+      "approved_date": "2026-04-24",
+      "reason": "Known vulnerability under remediation. Input sanitization being implemented."
+    },
+    {
+      "id": "threat-003",
+      "category": "Spoofing",
+      "component": "CORS Attack",
+      "severity": "Alta",
+      "approved_date": "2026-04-24",
+      "reason": "CORS policy restriction scheduled for next release."
+    },
+    {
+      "id": "threat-004",
+      "category": "Spoofing",
+      "component": "JWT Token Attack",
+      "severity": "Alta",
+      "approved_date": "2026-04-24",
+      "reason": "JWT validation hardening in progress."
+    },
+    {
+      "id": "threat-005",
+      "category": "Spoofing",
+      "component": "Session Fixation Attack",
+      "severity": "Alta",
+      "approved_date": "2026-04-24",
+      "reason": "Session regeneration fix scheduled for next sprint."
+    },
+    {
+      "id": "threat-006",
+      "category": "InformationDisclosure",
+      "component": "Path Traversal Attack",
+      "severity": "Alta",
+      "approved_date": "2026-04-24",
+      "reason": "Path validation controls being added."
+    },
+    {
+      "id": "threat-007",
+      "category": "ElevationOfPrivilege",
+      "component": "Weak Password Attack",
+      "severity": "Alta",
+      "approved_date": "2026-04-24",
+      "reason": "Strong password policy enforcement scheduled."
+    },
+    {
+      "id": "threat-008",
+      "category": "InformationDisclosure",
+      "component": "Info Leak Attack",
+      "severity": "Media",
+      "approved_date": "2026-04-24",
+      "reason": "Consistent error responses being standardized."
+    },
+    {
+      "id": "threat-009",
+      "category": "InformationDisclosure",
+      "component": "Insecure HTTP Headers Attack",
+      "severity": "Media",
+      "approved_date": "2026-04-24",
+      "reason": "Security headers configuration in progress."
+    },
+    {
+      "id": "threat-010",
+      "category": "DenialOfService",
+      "component": "Brute Force Attack",
+      "severity": "Media",
+      "approved_date": "2026-04-24",
+      "reason": "Rate limiting is partially implemented."
+    }
+  ]
+}

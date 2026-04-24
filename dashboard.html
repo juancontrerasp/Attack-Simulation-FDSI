@@ -1,1293 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attack Simulation Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f0f1e;
-            color: #e0e0e0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #2d2d44;
-        }
-
-        h1 {
-            font-size: 2em;
-            color: #ffffff;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: #888;
-            font-size: 0.95em;
-        }
-
-        .timestamp {
-            color: #666;
-            font-size: 0.85em;
-            margin-top: 10px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            background: #2d2d44;
-            color: #e0e0e0;
-            border: 1px solid #3d3d54;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.2s ease;
-        }
-
-        button:hover {
-            background: #3d3d54;
-            border-color: #4d4d64;
-        }
-
-        button:active {
-            transform: translateY(1px);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-radius: 4px;
-            padding: 20px;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            color: #888;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .stat-value.secure {
-            color: #4ade80;
-        }
-
-        .stat-value.vulnerable {
-            color: #f87171;
-        }
-
-        .stat-value.neutral {
-            color: #60a5fa;
-        }
-
-        .system-card {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-radius: 4px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .system-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #2d2d44;
-        }
-
-        .system-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .system-url {
-            color: #888;
-            font-size: 0.85em;
-            margin-top: 4px;
-        }
-
-        .system-status {
-            padding: 6px 16px;
-            border-radius: 3px;
-            font-weight: 500;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .system-status.secure {
-            background: rgba(74, 222, 128, 0.15);
-            color: #4ade80;
-            border: 1px solid #4ade80;
-        }
-
-        .system-status.vulnerable {
-            background: rgba(248, 113, 113, 0.15);
-            color: #f87171;
-            border: 1px solid #f87171;
-        }
-
-        .attack-result {
-            background: #141420;
-            border-left: 3px solid #2d2d44;
-            border-radius: 3px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-
-        .attack-result.secure {
-            border-left-color: #4ade80;
-        }
-
-        .attack-result.vulnerable {
-            border-left-color: #f87171;
-        }
-
-        .attack-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .attack-name {
-            font-size: 1em;
-            font-weight: 500;
-            color: #fff;
-        }
-
-        .attack-status {
-            padding: 3px 10px;
-            border-radius: 2px;
-            font-size: 0.8em;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-        }
-
-        .attack-status.secure {
-            background: rgba(74, 222, 128, 0.15);
-            color: #4ade80;
-        }
-
-        .attack-status.vulnerable {
-            background: rgba(248, 113, 113, 0.15);
-            color: #f87171;
-        }
-
-        .attack-details {
-            color: #aaa;
-            font-size: 0.88em;
-            line-height: 1.5;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 3px;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-
-        .attack-details::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .attack-details::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .attack-details::-webkit-scrollbar-thumb {
-            background: #3d3d54;
-            border-radius: 3px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .error {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid #f87171;
-            border-radius: 4px;
-            padding: 20px;
-            color: #f87171;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .info-box {
-            background: rgba(96, 165, 250, 0.1);
-            border: 1px solid #60a5fa;
-            border-radius: 4px;
-            padding: 12px;
-            color: #60a5fa;
-            margin-bottom: 20px;
-            font-size: 0.88em;
-        }
-
-        /* STRIDE Threats Panel */
-        .stride-section {
-            margin-top: 40px;
-        }
-
-        .stride-section h2 {
-            font-size: 1.3em;
-            color: #fff;
-            margin-bottom: 16px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #2d2d44;
-        }
-
-        .threat-card {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-left: 3px solid #4d4d64;
-            border-radius: 4px;
-            padding: 18px 20px;
-            margin-bottom: 12px;
-        }
-
-        .threat-card.severity-alta  { border-left-color: #f87171; }
-        .threat-card.severity-media { border-left-color: #fbbf24; }
-        .threat-card.severity-baja  { border-left-color: #4ade80; }
-
-        .threat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .threat-title {
-            font-size: 0.95em;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .threat-component {
-            font-size: 0.82em;
-            color: #888;
-            margin-top: 2px;
-        }
-
-        .threat-badges {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            flex-shrink: 0;
-        }
-
-        .badge {
-            padding: 2px 9px;
-            border-radius: 3px;
-            font-size: 0.75em;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-
-        .badge-alta   { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid #f87171; }
-        .badge-media  { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid #fbbf24; }
-        .badge-baja   { background: rgba(74,222,128,0.15);  color: #4ade80; border: 1px solid #4ade80; }
-        .badge-effort-low    { background: rgba(74,222,128,0.12);  color: #4ade80; border: 1px solid #4ade80; }
-        .badge-effort-medium { background: rgba(251,191,36,0.12);  color: #fbbf24; border: 1px solid #fbbf24; }
-        .badge-effort-high   { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid #f87171; }
-        .badge-category { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid #60a5fa; }
-
-        .threat-description {
-            color: #bbb;
-            font-size: 0.87em;
-            line-height: 1.55;
-            margin-bottom: 10px;
-        }
-
-        .threat-fields {
-            display: grid;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .threat-field {
-            background: rgba(0,0,0,0.25);
-            border-radius: 3px;
-            padding: 8px 12px;
-        }
-
-        .threat-field-label {
-            font-size: 0.72em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-        .threat-field-value {
-            font-size: 0.84em;
-            color: #ccc;
-            line-height: 1.5;
-        }
-
-        .threat-field-value.monospace {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.8em;
-            color: #a8d8a8;
-            white-space: pre-wrap;
-            word-break: break-all;
-            background: rgba(0,0,0,0.3);
-            padding: 8px;
-            border-radius: 3px;
-            border-left: 2px solid #4ade80;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .threat-reference {
-            font-size: 0.82em;
-            color: #60a5fa;
-        }
-
-        .stride-filter-bar {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
-        .filter-btn {
-            background: #1a1a2e;
-            border: 1px solid #3d3d54;
-            color: #aaa;
-            padding: 5px 14px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.82em;
-        }
-
-        .filter-btn.active {
-            background: #2d2d54;
-            border-color: #60a5fa;
-            color: #60a5fa;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.5em;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ── Lifecycle Panel (US-12) ─────────────────────────────────────── */
-        .lifecycle-section {
-            margin-top: 40px;
-        }
-
-        .lifecycle-section h2 {
-            font-size: 1.3em;
-            color: #fff;
-            margin-bottom: 16px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #2d2d44;
-        }
-
-        .trend-row {
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-
-        .trend-chart-wrap {
-            flex: 1;
-            min-width: 280px;
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-radius: 4px;
-            padding: 16px;
-        }
-
-        .trend-chart-title {
-            font-size: 0.82em;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-
-        #trendSvg {
-            width: 100%;
-            height: 160px;
-            display: block;
-        }
-
-        .trend-legend {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-
-        .trend-legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.78em;
-            color: #aaa;
-        }
-
-        .trend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .trend-indicator-wrap {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-radius: 4px;
-            padding: 16px 20px;
-            min-width: 160px;
-            text-align: center;
-        }
-
-        .trend-indicator-label {
-            font-size: 0.78em;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .trend-arrow {
-            font-size: 2.4em;
-            line-height: 1;
-        }
-
-        .trend-arrow.improving { color: #4ade80; }
-        .trend-arrow.worsening { color: #f87171; }
-        .trend-arrow.stable    { color: #888; }
-
-        .trend-indicator-sub {
-            font-size: 0.78em;
-            color: #666;
-            margin-top: 6px;
-        }
-
-        .lifecycle-filter-bar {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
-        .lc-filter-btn {
-            padding: 4px 14px;
-            border-radius: 3px;
-            font-size: 0.82em;
-            cursor: pointer;
-            border: 1px solid #3d3d54;
-            background: #1a1a2e;
-            color: #aaa;
-        }
-
-        .lc-filter-btn.active         { border-color: #888; color: #fff; }
-        .lc-filter-btn.status-open    { border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.08); }
-        .lc-filter-btn.status-mitigated { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,0.08); }
-        .lc-filter-btn.status-accepted  { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.08); }
-        .lc-filter-btn.status-reopened  { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.08); }
-
-        .lc-row {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-left: 3px solid #3d3d54;
-            border-radius: 4px;
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-        }
-
-        .lc-row.lc-open      { border-left-color: #fbbf24; }
-        .lc-row.lc-mitigated { border-left-color: #4ade80; }
-        .lc-row.lc-accepted  { border-left-color: #60a5fa; }
-        .lc-row.lc-reopened  { border-left-color: #f87171; }
-
-        .lc-status-badge {
-            padding: 2px 9px;
-            border-radius: 3px;
-            font-size: 0.72em;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .lc-status-open      { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid #fbbf24; }
-        .lc-status-mitigated { background: rgba(74,222,128,0.15);  color: #4ade80; border: 1px solid #4ade80; }
-        .lc-status-accepted  { background: rgba(96,165,250,0.15);  color: #60a5fa; border: 1px solid #60a5fa; }
-        .lc-status-reopened  { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid #f87171; }
-
-        .lc-body { flex: 1; min-width: 0; }
-
-        .lc-title {
-            font-size: 0.92em;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .lc-meta {
-            font-size: 0.78em;
-            color: #888;
-            margin-bottom: 4px;
-        }
-
-        .lc-desc {
-            font-size: 0.82em;
-            color: #aaa;
-            line-height: 1.45;
-        }
-
-        .lc-id {
-            font-family: 'Courier New', monospace;
-            font-size: 0.7em;
-            color: #555;
-            margin-top: 4px;
-        }
-
-        .trend-dot-open      { background: #fbbf24; }
-        .trend-dot-mitigated { background: #4ade80; }
-        .trend-dot-accepted  { background: #60a5fa; }
-        .trend-dot-reopened  { background: #f87171; }
-
-        .lc-cat-label { font-weight: 400; color: #888; }
-        .lc-reason    { margin-top: 4px; }
-
-        /* ── Feedback panel (US-14) ──────────────────────────────────── */
-        .feedback-section {
-            background: #1a1a2e;
-            border: 1px solid #2d2d44;
-            border-radius: 4px;
-            padding: 25px;
-            margin-top: 30px;
-        }
-
-        .feedback-section h2 {
-            font-size: 1.2em;
-            color: #fff;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #2d2d44;
-        }
-
-        .feedback-top {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-        }
-
-        .fb-gauge-wrap { flex-shrink: 0; width: 130px; }
-        .fb-gauge-wrap svg { width: 100%; height: auto; }
-
-        .fb-summary-text { flex: 1; min-width: 200px; }
-        .fb-summary-text .fb-source { font-size: 0.82em; color: #888; margin-bottom: 6px; }
-        .fb-summary-text .fb-system-summary { font-size: 0.92em; color: #ccc; line-height: 1.55; }
-
-        .fb-columns {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 16px;
-        }
-
-        .fb-col-title {
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .fb-col-title.good  { color: #4ade80; }
-        .fb-col-title.fix   { color: #f87171; }
-        .fb-col-title.add   { color: #60a5fa; }
-
-        .fb-item {
-            border-left: 3px solid;
-            border-radius: 3px;
-            padding: 8px 10px;
-            margin-bottom: 8px;
-            background: #0f0f1e;
-            font-size: 0.82em;
-        }
-
-        .fb-item.fb-good { border-left-color: #4ade80; }
-        .fb-item.fb-fix  { border-left-color: #f87171; }
-        .fb-item.fb-add  { border-left-color: #60a5fa; }
-
-        .fb-item-title { font-weight: 600; color: #fff; margin-bottom: 3px; }
-        .fb-item-sub   { color: #888; line-height: 1.45; }
-
-        .fb-badge-inline {
-            display: inline-block;
-            font-size: 0.72em;
-            padding: 1px 6px;
-            border-radius: 3px;
-            border: 1px solid;
-            margin-right: 4px;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
-
-        .btn-load-feedback {
-            font-size: 0.6em;
-            margin-left: 14px;
-            padding: 4px 12px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Dashboard – STRIDE Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d1a;
+      --surface: #1a1a2e;
+      --border: #2d2d44;
+      --text: #e2e8f0;
+      --muted: #888;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --cyan: #22d3ee;
+      --accent: #818cf8;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { font-size: 1.25rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+    .logo span { font-size: 1.5rem; }
+    .header-meta { color: var(--muted); font-size: 0.82rem; }
+    #ciStatus {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 8px 14px; font-size: 0.85rem;
+    }
+    .ci-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .ci-dot.pass { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .ci-dot.fail { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    .ci-dot.unknown { background: var(--muted); }
+
+    main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+    .card .c-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .card .c-value { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+    .c-value.green  { color: var(--green); }
+    .c-value.yellow { color: var(--yellow); }
+    .c-value.red    { color: var(--red); }
+    .c-value.cyan   { color: var(--cyan); }
+    .c-value.white  { color: #fff; }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+    .chart-wrap { max-width: 420px; margin: 0 auto; }
+
+    .filters {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px;
+    }
+    .filters input, .filters select {
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px; padding: 8px 12px; font-size: 0.88rem;
+      outline: none;
+    }
+    .filters input { flex: 1; min-width: 200px; }
+    .filters input:focus, .filters select:focus { border-color: var(--accent); }
+    .filters label { font-size: 0.82rem; color: var(--muted); }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 600px; }
+    thead th {
+      text-align: left; padding: 10px 14px;
+      color: var(--muted); font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase; font-size: 0.74rem; letter-spacing: 0.5px;
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    thead th:hover { color: var(--text); }
+    thead th .sort-icon { margin-left: 4px; opacity: 0.4; }
+    thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    tbody tr { border-bottom: 1px solid #1e1e30; transition: background 0.15s; }
+    tbody tr:hover { background: rgba(129,140,248,0.05); }
+    tbody td { padding: 12px 14px; vertical-align: top; }
+    .threat-desc { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+    .no-results { text-align: center; padding: 40px; color: var(--muted); font-size: 0.9rem; }
+
+    .badge {
+      display: inline-block; padding: 3px 9px;
+      border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+    }
+    .badge-Alta    { background: rgba(248,113,113,.15); color: var(--red);    border: 1px solid var(--red); }
+    .badge-Media   { background: rgba(250,204, 21,.15); color: var(--yellow); border: 1px solid var(--yellow); }
+    .badge-Baja    { background: rgba( 74,222,128,.15); color: var(--green);  border: 1px solid var(--green); }
+    .badge-cat     { background: rgba(129,140,248,.1);  color: var(--accent); border: 1px solid var(--accent); }
+    .badge-confirm { background: rgba( 34,211,238,.1);  color: var(--cyan);   border: 1px solid var(--cyan); }
+    .badge-unconf  { background: rgba(136,136,136,.1);  color: var(--muted);  border: 1px solid var(--border); }
+
+    .stride-bars { display: flex; flex-direction: column; gap: 10px; }
+    .stride-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.82rem; margin-bottom: 4px; color: var(--text);
+    }
+    .stride-label .cnt { color: var(--muted); }
+    .progress { background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+
+    .ci-panel { display: flex; flex-direction: column; gap: 12px; }
+    .ci-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .ci-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+    .ci-info { flex: 1; }
+    .ci-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+    .ci-detail { font-size: 0.82rem; color: var(--muted); }
+    .ci-badge { font-size: 0.78rem; padding: 2px 8px; border-radius: 3px; align-self: flex-start; }
+    .ci-badge.pass { background: rgba(74,222,128,.15); color: var(--green); border: 1px solid var(--green); }
+    .ci-badge.info { background: rgba(34,211,238,.1); color: var(--cyan); border: 1px solid var(--cyan); }
+
+    .error-box { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .error-box .error-icon { font-size: 3rem; margin-bottom: 16px; }
+    .error-box p { font-size: 0.9rem; line-height: 1.6; }
+    .error-box code { background: var(--border); padding: 2px 6px; border-radius: 3px; font-size: 0.85rem; }
+
+    #loadingMsg { text-align: center; padding: 60px; color: var(--muted); }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Attack Simulation Dashboard</h1>
-            <div class="subtitle">Security Testing Monitor</div>
-            <div class="timestamp" id="lastUpdate">Last updated: Never</div>
-        </header>
 
-        <div class="controls">
-            <button type="button" onclick="loadResults()">Refresh Data</button>
-            <button type="button" onclick="toggleAutoRefresh()">Auto-Refresh: <span id="autoRefreshStatus">OFF</span></button>
-            <button type="button" onclick="clearData()">Clear Display</button>
-        </div>
+<header>
+  <div class="logo"><span>🛡️</span> Security Dashboard</div>
+  <div class="header-meta" id="reportTimestamp">Loading…</div>
+  <div id="ciStatus">
+    <div class="ci-dot unknown" id="ciDot"></div>
+    <span id="ciStatusText">CI/CD Status</span>
+  </div>
+</header>
 
-        <div class="info-box">
-            Run AttackEngine to generate results.json, then refresh this dashboard to see the latest attack data.
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Total Attacks</div>
-                <div class="stat-value neutral" id="totalAttacks">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Vulnerabilities</div>
-                <div class="stat-value vulnerable" id="vulnerabilitiesFound">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Passed Tests</div>
-                <div class="stat-value secure" id="passedTests">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Status</div>
-                <div class="stat-value neutral" id="overallStatus">-</div>
-            </div>
-        </div>
-
-        <div id="systemsGrid">
-            <div class="loading">Waiting for data</div>
-        </div>
-
-        <!-- STRIDE Threats Panel (US-11) -->
-        <div class="stride-section">
-            <h2>STRIDE Threat Analysis</h2>
-            <div class="stride-filter-bar" id="strideFilterBar">
-                <button type="button" class="filter-btn active" onclick="filterThreats('all')">All</button>
-                <button type="button" class="filter-btn" onclick="filterThreats('Spoofing')">Spoofing</button>
-                <button type="button" class="filter-btn" onclick="filterThreats('Tampering')">Tampering</button>
-                <button type="button" class="filter-btn" onclick="filterThreats('Repudiation')">Repudiation</button>
-                <button type="button" class="filter-btn" onclick="filterThreats('InformationDisclosure')">Info Disclosure</button>
-                <button type="button" class="filter-btn" onclick="filterThreats('DenialOfService')">DoS</button>
-                <button type="button" class="filter-btn" onclick="filterThreats('ElevationOfPrivilege')">EoP</button>
-            </div>
-            <div id="strideThreatsGrid">
-                <div class="loading">Load threats-output.json to see STRIDE analysis</div>
-            </div>
-        </div>
-
-        <!-- Lifecycle Panel (US-12) -->
-        <div class="lifecycle-section">
-            <h2>Threat Lifecycle</h2>
-
-            <div class="trend-row">
-                <div class="trend-chart-wrap">
-                    <div class="trend-chart-title">Trend — threats over time</div>
-                    <svg id="trendSvg" viewBox="0 0 600 140" preserveAspectRatio="none"></svg>
-                    <div class="trend-legend">
-                        <div class="trend-legend-item"><div class="trend-dot trend-dot-open"></div>Open</div>
-                        <div class="trend-legend-item"><div class="trend-dot trend-dot-mitigated"></div>Mitigated</div>
-                        <div class="trend-legend-item"><div class="trend-dot trend-dot-accepted"></div>Accepted</div>
-                        <div class="trend-legend-item"><div class="trend-dot trend-dot-reopened"></div>Reopened</div>
-                    </div>
-                </div>
-                <div class="trend-indicator-wrap">
-                    <div class="trend-indicator-label">Security Trend</div>
-                    <div class="trend-arrow" id="trendArrow">—</div>
-                    <div class="trend-indicator-sub" id="trendSub">No data yet</div>
-                </div>
-            </div>
-
-            <div class="lifecycle-filter-bar" id="lcFilterBar">
-                <button type="button" class="lc-filter-btn active" onclick="filterLifecycle('all', this)">All</button>
-                <button type="button" class="lc-filter-btn status-open" onclick="filterLifecycle('open', this)">Open</button>
-                <button type="button" class="lc-filter-btn status-mitigated" onclick="filterLifecycle('mitigated', this)">Mitigated</button>
-                <button type="button" class="lc-filter-btn status-accepted" onclick="filterLifecycle('accepted', this)">Accepted</button>
-                <button type="button" class="lc-filter-btn status-reopened" onclick="filterLifecycle('reopened', this)">Reopened</button>
-            </div>
-            <div id="lifecycleGrid">
-                <div class="loading">Load security/threat-registry.json to see lifecycle data</div>
-            </div>
-        </div>
-
-        <!-- Design Feedback Panel (US-14) -->
-        <div class="feedback-section">
-            <h2>Design Security Feedback
-                <button type="button" class="btn-load-feedback" onclick="loadFeedback()">Load design-feedback.json</button>
-            </h2>
-            <div id="feedbackContent">
-                <div class="loading">Load design-feedback.json to see feedback</div>
-            </div>
-        </div>
+<main>
+  <div id="loadingMsg">⏳ Loading combined-report.json…</div>
+  <div id="content" style="display:none">
+    <div class="cards" id="metricCards"></div>
+    <div class="two-col">
+      <section>
+        <h2>📡 STRIDE Radar</h2>
+        <div class="chart-wrap"><canvas id="radarChart"></canvas></div>
+      </section>
+      <section>
+        <h2>📊 STRIDE Coverage</h2>
+        <div class="stride-bars" id="strideBars"></div>
+      </section>
     </div>
-
-    <script>
-        let autoRefreshInterval = null;
-        let lastData = null;
-
-        function loadResults() {
-            fetch('results.json?' + Date.now())
-                .then(response => {
-                    if (!response.ok) throw new Error('No results file found');
-                    return response.json();
-                })
-                .then(data => {
-                    lastData = data;
-                    displayResults(data);
-                    updateTimestamp();
-                })
-                .catch(error => {
-                    document.getElementById('systemsGrid').innerHTML = 
-                        `<div class="error">${error.message}<br><br>Run AttackEngine to generate results.json</div>`;
-                });
-        }
-
-        function displayResults(data) {
-            const systemsGrid = document.getElementById('systemsGrid');
-            systemsGrid.innerHTML = '';
-
-            let totalAttacks = 0;
-            let vulnerabilitiesFound = 0;
-            let passedTests = 0;
-
-            data.systems.forEach(system => {
-                totalAttacks += system.attacks.length;
-                const vulnerableCount = system.attacks.filter(a => a.vulnerable).length;
-                vulnerabilitiesFound += vulnerableCount;
-                passedTests += system.attacks.length - vulnerableCount;
-
-                const isSecure = vulnerableCount === 0;
-                const card = document.createElement('div');
-                card.className = 'system-card';
-                card.innerHTML = `
-                    <div class="system-header">
-                        <div>
-                            <div class="system-title">${system.name}</div>
-                            <div class="system-url">${system.url}</div>
-                        </div>
-                        <div class="system-status ${isSecure ? 'secure' : 'vulnerable'}">
-                            ${isSecure ? 'SECURE' : 'VULNERABLE'}
-                        </div>
-                    </div>
-                    ${system.attacks.map(attack => `
-                        <div class="attack-result ${attack.vulnerable ? 'vulnerable' : 'secure'}">
-                            <div class="attack-header">
-                                <div class="attack-name">${attack.name}</div>
-                                <div class="attack-status ${attack.vulnerable ? 'vulnerable' : 'secure'}">
-                                    ${attack.vulnerable ? 'VULNERABLE' : 'SECURE'}
-                                </div>
-                            </div>
-                            <div class="attack-details">${attack.details}</div>
-                        </div>
-                    `).join('')}
-                `;
-                systemsGrid.appendChild(card);
-            });
-
-            document.getElementById('totalAttacks').textContent = totalAttacks;
-            document.getElementById('vulnerabilitiesFound').textContent = vulnerabilitiesFound;
-            document.getElementById('passedTests').textContent = passedTests;
-            
-            const overallStatus = document.getElementById('overallStatus');
-            if (vulnerabilitiesFound === 0) {
-                overallStatus.textContent = 'SECURE';
-                overallStatus.className = 'stat-value secure';
-            } else {
-                overallStatus.textContent = 'AT RISK';
-                overallStatus.className = 'stat-value vulnerable';
-            }
-        }
-
-        function updateTimestamp() {
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = 
-                `Last updated: ${now.toLocaleTimeString()}`;
-        }
-
-        function toggleAutoRefresh() {
-            const statusEl = document.getElementById('autoRefreshStatus');
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-                statusEl.textContent = 'OFF';
-            } else {
-                autoRefreshInterval = setInterval(loadResults, 5000);
-                statusEl.textContent = 'ON';
-                loadResults();
-            }
-        }
-
-        function clearData() {
-            document.getElementById('systemsGrid').innerHTML = 
-                '<div class="loading">Waiting for data</div>';
-            document.getElementById('totalAttacks').textContent = '0';
-            document.getElementById('vulnerabilitiesFound').textContent = '0';
-            document.getElementById('passedTests').textContent = '0';
-            document.getElementById('overallStatus').textContent = '-';
-            document.getElementById('lastUpdate').textContent = 'Last updated: Never';
-        }
-
-        window.addEventListener('load', () => {
-            setTimeout(loadResults, 500);
-            setTimeout(loadStrideThreats, 700);
-        });
-
-        // ── STRIDE Threats Panel ──────────────────────────────────────────
-
-        let allThreats = [];
-        let activeFilter = 'all';
-
-        function loadStrideThreats() {
-            // Try enriched first, fall back to base threats-output
-            fetch('threats-output.json?' + Date.now())
-                .then(r => { if (!r.ok) throw new Error('no file'); return r.json(); })
-                .then(data => renderStrideThreats(data))
-                .catch(() => {
-                    document.getElementById('strideThreatsGrid').innerHTML =
-                        '<div class="loading">No threats-output.json found. Run the STRIDE analysis first.</div>';
-                });
-        }
-
-        function severityClass(s) {
-            if (!s) return '';
-            return 'severity-' + s.toLowerCase();
-        }
-
-        function effortBadgeClass(effort) {
-            if (!effort) return '';
-            const map = { Low: 'badge-effort-low', Medium: 'badge-effort-medium', High: 'badge-effort-high' };
-            return map[effort] || '';
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-        }
-
-        function buildThreatCard(threat) {
-            const hasRec = threat.control_standard || threat.reference_id || threat.implementation_hint;
-            const effortClass = effortBadgeClass(threat.effort_estimate);
-
-            return `
-            <div class="threat-card ${severityClass(threat.severity)}" data-category="${threat.category}">
-                <div class="threat-header">
-                    <div>
-                        <div class="threat-title">${escapeHtml(threat.description || threat.component)}</div>
-                        <div class="threat-component">${escapeHtml(threat.component)}</div>
-                    </div>
-                    <div class="threat-badges">
-                        <span class="badge badge-category">${escapeHtml(threat.category)}</span>
-                        <span class="badge badge-${(threat.severity || '').toLowerCase()}">${escapeHtml(threat.severity)}</span>
-                        ${threat.effort_estimate ? `<span class="badge ${effortClass}">${escapeHtml(threat.effort_estimate)} effort</span>` : ''}
-                    </div>
-                </div>
-                <div class="threat-description">${escapeHtml(threat.description)}</div>
-                ${threat.evidence ? `
-                <div class="threat-field">
-                    <div class="threat-field-label">Evidence</div>
-                    <div class="threat-field-value">${escapeHtml(threat.evidence)}</div>
-                </div>` : ''}
-                ${hasRec ? `
-                <div class="threat-fields">
-                    ${threat.control_standard ? `
-                    <div class="threat-field">
-                        <div class="threat-field-label">Control Standard</div>
-                        <div class="threat-field-value">${escapeHtml(threat.control_standard)}</div>
-                    </div>` : ''}
-                    ${threat.reference_id ? `
-                    <div class="threat-field">
-                        <div class="threat-field-label">Reference</div>
-                        <div class="threat-field-value threat-reference">${escapeHtml(threat.reference_id)}</div>
-                    </div>` : ''}
-                    ${threat.implementation_hint ? `
-                    <div class="threat-field">
-                        <div class="threat-field-label">Implementation Hint</div>
-                        <div class="threat-field-value monospace">${escapeHtml(threat.implementation_hint)}</div>
-                    </div>` : ''}
-                    ${threat.mitigation ? `
-                    <div class="threat-field">
-                        <div class="threat-field-label">Mitigation</div>
-                        <div class="threat-field-value">${escapeHtml(threat.mitigation)}</div>
-                    </div>` : ''}
-                </div>` : (threat.mitigation ? `
-                <div class="threat-field">
-                    <div class="threat-field-label">Mitigation</div>
-                    <div class="threat-field-value">${escapeHtml(threat.mitigation)}</div>
-                </div>` : '')}
-            </div>`;
-        }
-
-        function renderStrideThreats(data) {
-            allThreats = [];
-            const threatsObj = data.threats || {};
-            for (const category of Object.keys(threatsObj)) {
-                for (const t of (threatsObj[category] || [])) {
-                    allThreats.push({ ...t, category: t.category || category });
-                }
-            }
-
-            if (allThreats.length === 0) {
-                document.getElementById('strideThreatsGrid').innerHTML =
-                    '<div class="loading">No threats found in threats-output.json</div>';
-                return;
-            }
-
-            renderFilteredThreats();
-        }
-
-        function renderFilteredThreats() {
-            const grid = document.getElementById('strideThreatsGrid');
-            const filtered = activeFilter === 'all'
-                ? allThreats
-                : allThreats.filter(t => t.category === activeFilter);
-
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div class="loading">No threats in this category</div>';
-                return;
-            }
-
-            grid.innerHTML = filtered.map(buildThreatCard).join('');
-        }
-
-        function filterThreats(category) {
-            activeFilter = category;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            renderFilteredThreats();
-        }
-
-        // ── Lifecycle Panel (US-12) ───────────────────────────────────────
-
-        let allRegistryThreats = [];
-        let lcActiveFilter = 'all';
-
-        window.addEventListener('load', () => {
-            setTimeout(loadLifecycleData, 900);
-        });
-
-        function loadLifecycleData() {
-            Promise.all([
-                fetch('security/threat-registry.json?' + Date.now())
-                    .then(r => r.ok ? r.json() : [])
-                    .catch(() => []),
-                fetch('security/trend-report.json?' + Date.now())
-                    .then(r => r.ok ? r.json() : [])
-                    .catch(() => [])
-            ]).then(([registry, trend]) => {
-                allRegistryThreats = Array.isArray(registry) ? registry : [];
-                renderLifecycleGrid();
-                renderTrendChart(Array.isArray(trend) ? trend : []);
-            });
-        }
-
-        function filterLifecycle(status, btn) {
-            lcActiveFilter = status;
-            document.querySelectorAll('.lc-filter-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            renderLifecycleGrid();
-        }
-
-        function renderLifecycleGrid() {
-            const grid = document.getElementById('lifecycleGrid');
-            const list = lcActiveFilter === 'all'
-                ? allRegistryThreats
-                : allRegistryThreats.filter(e => e.status === lcActiveFilter);
-
-            if (list.length === 0) {
-                grid.innerHTML = '<div class="loading">No threats' +
-                    (lcActiveFilter !== 'all' ? ' with status "' + escapeHtml(lcActiveFilter) + '"' : '') +
-                    '. Run the STRIDE analysis to populate the registry.</div>';
-                return;
-            }
-
-            grid.innerHTML = list.map(e => {
-                const lastChange = e.history && e.history.length
-                    ? e.history[e.history.length - 1]
-                    : null;
-                return `
-                <div class="lc-row lc-${escapeHtml(e.status)}">
-                    <span class="lc-status-badge lc-status-${escapeHtml(e.status)}">${escapeHtml(e.status.toUpperCase())}</span>
-                    <div class="lc-body">
-                        <div class="lc-title">${escapeHtml(e.component)} <span class="lc-cat-label">— ${escapeHtml(e.category)}</span></div>
-                        <div class="lc-meta">Severity: ${escapeHtml(e.severity)} &nbsp;|&nbsp; Created: ${(e.created_at || '').slice(0, 10)} &nbsp;|&nbsp; Updated: ${(e.updated_at || '').slice(0, 10)}${lastChange && lastChange.changed_by !== 'system' ? ' &nbsp;|&nbsp; By: ' + escapeHtml(lastChange.changed_by) : ''}</div>
-                        <div class="lc-desc">${escapeHtml((e.description || '').slice(0, 120))}${(e.description || '').length > 120 ? '…' : ''}</div>
-                        ${lastChange && lastChange.reason ? '<div class="lc-meta lc-reason">Reason: ' + escapeHtml(lastChange.reason) + '</div>' : ''}
-                        <div class="lc-id">${escapeHtml(e.id)}</div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function renderTrendChart(snapshots) {
-            const svg = document.getElementById('trendSvg');
-            const W = 600, H = 140, PAD = { top: 12, right: 16, bottom: 28, left: 28 };
-            const chartW = W - PAD.left - PAD.right;
-            const chartH = H - PAD.top - PAD.bottom;
-
-            if (snapshots.length === 0) {
-                svg.innerHTML = '<text x="300" y="75" text-anchor="middle" fill="#555" font-size="13">No trend data yet — run analysis to generate snapshots</text>';
-                updateTrendIndicator(null);
-                return;
-            }
-
-            const series = [
-                { key: 'total_open',      color: '#fbbf24' },
-                { key: 'total_mitigated', color: '#4ade80' },
-                { key: 'total_accepted',  color: '#60a5fa' },
-                { key: 'total_reopened',  color: '#f87171' }
-            ];
-
-            const maxVal = Math.max(1, ...snapshots.flatMap(s =>
-                series.map(se => s[se.key] || 0)
-            ));
-
-            function px(i) {
-                return PAD.left + (snapshots.length === 1 ? chartW / 2 : (i / (snapshots.length - 1)) * chartW);
-            }
-            function py(v) {
-                return PAD.top + chartH - (v / maxVal) * chartH;
-            }
-
-            let html = '';
-
-            // Grid lines
-            [0, 0.25, 0.5, 0.75, 1].forEach(f => {
-                const y = PAD.top + chartH * (1 - f);
-                const val = Math.round(f * maxVal);
-                html += `<line x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}" stroke="#2d2d44" stroke-width="1"/>`;
-                html += `<text x="${PAD.left - 4}" y="${y + 4}" text-anchor="end" fill="#555" font-size="9">${val}</text>`;
-            });
-
-            // Date labels (first and last)
-            const fmt = d => (d || '').slice(0, 10);
-            html += `<text x="${px(0)}" y="${H - 4}" text-anchor="middle" fill="#555" font-size="9">${escapeHtml(fmt(snapshots[0].date))}</text>`;
-            if (snapshots.length > 1) {
-                html += `<text x="${px(snapshots.length - 1)}" y="${H - 4}" text-anchor="middle" fill="#555" font-size="9">${escapeHtml(fmt(snapshots[snapshots.length - 1].date))}</text>`;
-            }
-
-            // Lines + dots
-            for (const se of series) {
-                if (snapshots.every(s => !s[se.key])) continue;
-                const pts = snapshots.map((s, i) => `${px(i)},${py(s[se.key] || 0)}`);
-                html += `<polyline points="${pts.join(' ')}" fill="none" stroke="${se.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-                snapshots.forEach((s, i) => {
-                    html += `<circle cx="${px(i)}" cy="${py(s[se.key] || 0)}" r="3" fill="${se.color}"/>`;
-                });
-            }
-
-            svg.innerHTML = html;
-            updateTrendIndicator(snapshots);
-        }
-
-        function updateTrendIndicator(snapshots) {
-            const arrow = document.getElementById('trendArrow');
-            const sub   = document.getElementById('trendSub');
-            if (!snapshots || snapshots.length < 2) {
-                arrow.textContent = '—';
-                arrow.className = 'trend-arrow stable';
-                sub.textContent = snapshots && snapshots.length === 1 ? 'Only 1 snapshot' : 'No data yet';
-                return;
-            }
-            const prev = snapshots[snapshots.length - 2];
-            const curr = snapshots[snapshots.length - 1];
-            const delta = (curr.total_open || 0) - (prev.total_open || 0);
-            if (delta < 0) {
-                arrow.textContent = '↓';
-                arrow.className = 'trend-arrow improving';
-                sub.textContent = `${Math.abs(delta)} fewer open`;
-            } else if (delta > 0) {
-                arrow.textContent = '↑';
-                arrow.className = 'trend-arrow worsening';
-                sub.textContent = `${delta} more open`;
-            } else {
-                arrow.textContent = '→';
-                arrow.className = 'trend-arrow stable';
-                sub.textContent = 'No change';
-            }
-        }
-
-        // ── Design Feedback Panel (US-14) ─────────────────────────────────────
-
-        const STRIDE_COLOR_MAP = {
-            Spoofing: '#a78bfa', Tampering: '#fb923c', Repudiation: '#facc15',
-            InformationDisclosure: '#38bdf8', DenialOfService: '#f87171', ElevationOfPrivilege: '#4ade80'
-        };
-        const SEV_COLOR_MAP = { Alta: '#f87171', Media: '#fbbf24', Baja: '#60a5fa' };
-
-        function fbScoreColor(s) {
-            return s >= 70 ? '#4ade80' : s >= 40 ? '#fbbf24' : '#f87171';
-        }
-
-        function fbScoreLabel(s) {
-            return s >= 70 ? 'Diseño Seguro' : s >= 40 ? 'Mejoras Necesarias' : 'Alto Riesgo';
-        }
-
-        function fbGaugeSvg(score) {
-            const col = fbScoreColor(score);
-            const r = 70, cx = 100, cy = 100;
-            const circ = Math.PI * r;
-            const filled = (score / 100) * circ;
-            const gap = circ - filled;
-            return `<svg viewBox="0 0 200 115" xmlns="http://www.w3.org/2000/svg">
-  <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}" fill="none" stroke="#2d2d44" stroke-width="18" stroke-linecap="round"/>
-  <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}" fill="none" stroke="${col}" stroke-width="18"
-        stroke-linecap="round" stroke-dasharray="${filled} ${gap}"/>
-  <text x="${cx}" y="${cy-4}" text-anchor="middle" fill="${col}" font-size="32" font-weight="700" font-family="Segoe UI,sans-serif">${score}</text>
-  <text x="${cx}" y="${cy+18}" text-anchor="middle" fill="#888" font-size="12" font-family="Segoe UI,sans-serif">${escapeHtml(fbScoreLabel(score))}</text>
-</svg>`;
-        }
-
-        function fbBadge(label, col) {
-            return `<span class="fb-badge-inline" style="background:${col}20;color:${col};border-color:${col}">${escapeHtml(label)}</span>`;
-        }
-
-        function renderFeedback(fb) {
-            const score = fb.overall_security_score || 0;
-            const date = fb.metadata && fb.metadata.generated_at
-                ? new Date(fb.metadata.generated_at).toLocaleString()
-                : '';
-
-            const goodRows = (fb.whats_good || []).map(g => {
-                const col = STRIDE_COLOR_MAP[g.stride_impact] || '#888';
-                return `<div class="fb-item fb-good">
-  <div class="fb-item-title">${fbBadge(g.stride_impact, col)} ${escapeHtml(g.aspect)}</div>
-  <div class="fb-item-sub">${escapeHtml(g.why_it_matters)}</div>
-</div>`;
-            }).join('') || '<div class="fb-item-sub" style="color:#555">—</div>';
-
-            const fixRows = (fb.what_to_fix || []).map(f => {
-                const sc = SEV_COLOR_MAP[f.severity] || '#888';
-                const cc = STRIDE_COLOR_MAP[f.stride_category] || '#888';
-                return `<div class="fb-item fb-fix">
-  <div class="fb-item-title">${fbBadge(f.severity, sc)}${fbBadge(f.stride_category, cc)} ${escapeHtml(f.issue)}</div>
-  <div class="fb-item-sub">${escapeHtml(f.how_to_fix)}</div>
-</div>`;
-            }).join('') || '<div class="fb-item-sub" style="color:#555">—</div>';
-
-            const addRows = (fb.what_to_add || []).map(a => {
-                const cc = STRIDE_COLOR_MAP[a.stride_category] || '#888';
-                return `<div class="fb-item fb-add">
-  <div class="fb-item-title">${fbBadge(a.stride_category, cc)} ${escapeHtml(a.missing_control)}</div>
-  <div class="fb-item-sub">${escapeHtml(a.why_needed)}${a.implementation_hint ? `<br><em>${escapeHtml(a.implementation_hint)}</em>` : ''}</div>
-</div>`;
-            }).join('') || '<div class="fb-item-sub" style="color:#555">—</div>';
-
-            return `<div class="feedback-top">
-  <div class="fb-gauge-wrap">${fbGaugeSvg(score)}</div>
-  <div class="fb-summary-text">
-    <div class="fb-source">${escapeHtml((fb.metadata && fb.metadata.source_name) || '')} — ${escapeHtml(date)}</div>
-    <div class="fb-system-summary">${escapeHtml(fb.system_summary || '')}</div>
+    <section>
+      <h2>🔍 Threats</h2>
+      <div class="filters">
+        <input type="text" id="searchBox" placeholder="🔍 Search component, category, description…" oninput="applyFilters()">
+        <label>Severity:</label>
+        <select id="sevFilter" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+        <label>Category:</label>
+        <select id="catFilter" onchange="applyFilters()">
+          <option value="">All</option>
+        </select>
+        <label>Confirmed:</label>
+        <select id="confFilter" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="yes">Confirmed</option>
+          <option value="no">Not confirmed</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="threatsTable">
+          <thead>
+            <tr>
+              <th onclick="sortBy('category')">Category <span class="sort-icon">↕</span></th>
+              <th onclick="sortBy('component')">Component <span class="sort-icon">↕</span></th>
+              <th onclick="sortBy('severity')">Severity <span class="sort-icon">↕</span></th>
+              <th>Description</th>
+              <th onclick="sortBy('confirmed')">Confirmed <span class="sort-icon">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="threatsBody"></tbody>
+        </table>
+      </div>
+      <div class="no-results" id="noResults" style="display:none">No threats match your filters.</div>
+    </section>
+    <section>
+      <h2>⚙️ CI/CD Pipeline Status</h2>
+      <div class="ci-panel" id="ciPanel"></div>
+    </section>
   </div>
-</div>
-<div class="fb-columns">
-  <div>
-    <div class="fb-col-title good">✔ Lo que está bien (${(fb.whats_good||[]).length})</div>
-    ${goodRows}
-  </div>
-  <div>
-    <div class="fb-col-title fix">✖ Lo que hay que corregir (${(fb.what_to_fix||[]).length})</div>
-    ${fixRows}
-  </div>
-  <div>
-    <div class="fb-col-title add">+ Lo que hay que agregar (${(fb.what_to_add||[]).length})</div>
-    ${addRows}
-  </div>
-</div>`;
-        }
+</main>
 
-        function loadFeedback() {
-            fetch('design-feedback.json?' + Date.now())
-                .then(r => {
-                    if (!r.ok) throw new Error('design-feedback.json not found');
-                    return r.json();
-                })
-                .then(fb => {
-                    document.getElementById('feedbackContent').innerHTML = renderFeedback(fb);
-                })
-                .catch(err => {
-                    document.getElementById('feedbackContent').innerHTML =
-                        `<div class="error">${err.message}<br><br>Run: node stride-agent/index.js --file &lt;artefact&gt; --mode feedback</div>`;
-                });
+<script>
+var allThreats = [];
+var currentSort = { field: null, asc: true };
+
+var STRIDE_CATEGORIES = [
+  'Spoofing', 'Tampering', 'Repudiation',
+  'InformationDisclosure', 'DenialOfService', 'ElevationOfPrivilege'
+];
+
+var CAT_ALIASES = {
+  'information disclosure': 'InformationDisclosure',
+  'informationdisclosure':  'InformationDisclosure',
+  'denial of service':      'DenialOfService',
+  'denialofservice':        'DenialOfService',
+  'elevation of privilege': 'ElevationOfPrivilege',
+  'elevationofprivilege':   'ElevationOfPrivilege',
+};
+function normCat(cat) {
+  var k = (cat || '').trim().toLowerCase().replace(/\s+/g,'');
+  return CAT_ALIASES[k] || cat;
+}
+
+fetch('combined-report.json?' + Date.now())
+  .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(function(data) { initDashboard(data); })
+  .catch(function(err) {
+    document.getElementById('loadingMsg').innerHTML =
+      '<div class="error-box"><div class="error-icon">⚠️</div><p>Could not load <code>combined-report.json</code><br><br>' +
+      err.message + '<br><br>Use <code>dashboard-standalone.html</code> to view without a web server.</p></div>';
+  });
+
+function initDashboard(data) {
+  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('content').style.display = '';
+
+  var ts = data.timestamp || new Date().toISOString();
+  document.getElementById('reportTimestamp').textContent = 'Report: ' + new Date(ts).toLocaleString();
+
+  var threats = (data.combined_threats || []).map(function(t) {
+    return Object.assign({}, t, { category: normCat(t.category) });
+  });
+  allThreats = threats;
+
+  renderCards(data, threats);
+  renderRadar(threats);
+  renderStrideBars(threats);
+  renderCIPanel(data);
+  populateCategoryFilter(threats);
+  renderTable(threats);
+}
+
+function renderCards(data, threats) {
+  var total = threats.length;
+  var alta  = threats.filter(function(t){ return t.severity === 'Alta'; }).length;
+  var media = threats.filter(function(t){ return t.severity === 'Media'; }).length;
+  var baja  = threats.filter(function(t){ return t.severity === 'Baja'; }).length;
+  var conf  = threats.filter(function(t){ return t.confirmed === true; }).length;
+  var covCats = STRIDE_CATEGORIES.filter(function(c){
+    return threats.some(function(t){ return t.category === c; });
+  }).length;
+
+  var cards = [
+    { label: 'Total Threats',   value: total, cls: 'white' },
+    { label: 'Alta',            value: alta,  cls: 'red' },
+    { label: 'Media',           value: media, cls: 'yellow' },
+    { label: 'Baja',            value: baja,  cls: 'green' },
+    { label: 'Confirmed',       value: conf,  cls: 'cyan' },
+    { label: 'STRIDE Coverage', value: Math.round(covCats/6*100)+'%', cls: 'cyan' },
+  ];
+  document.getElementById('metricCards').innerHTML = cards.map(function(c){
+    return '<div class="card"><div class="c-label">'+c.label+'</div><div class="c-value '+c.cls+'">'+c.value+'</div></div>';
+  }).join('');
+
+  var dot = document.getElementById('ciDot');
+  var ciText = document.getElementById('ciStatusText');
+  if (alta === 0) {
+    dot.className = 'ci-dot pass';
+    ciText.textContent = 'Baseline OK';
+  } else {
+    dot.className = 'ci-dot fail';
+    ciText.textContent = alta + ' High threat(s)';
+  }
+}
+
+var radarChart = null;
+function renderRadar(threats) {
+  var counts = STRIDE_CATEGORIES.map(function(cat){
+    return threats.filter(function(t){ return t.category === cat; }).length;
+  });
+  var ctx = document.getElementById('radarChart').getContext('2d');
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: STRIDE_CATEGORIES,
+      datasets: [{
+        label: 'Threats',
+        data: counts,
+        backgroundColor: 'rgba(129,140,248,0.15)',
+        borderColor: '#818cf8',
+        pointBackgroundColor: '#818cf8',
+        borderWidth: 2,
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      scales: {
+        r: {
+          min: 0,
+          ticks: { color: '#888', stepSize: 1, precision: 0 },
+          grid: { color: '#2d2d44' },
+          pointLabels: { color: '#ccc', font: { size: 11 } },
+          angleLines: { color: '#2d2d44' }
         }
-    </script>
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderStrideBars(threats) {
+  var counts = STRIDE_CATEGORIES.map(function(c){
+    return threats.filter(function(t){ return t.category === c; }).length;
+  });
+  var maxCount = Math.max.apply(null, counts.concat([1]));
+  document.getElementById('strideBars').innerHTML = STRIDE_CATEGORIES.map(function(cat, i){
+    var count = counts[i];
+    var pct = Math.round(count / maxCount * 100);
+    var color = count === 0 ? '#2d2d44' : count >= 3 ? '#f87171' : count >= 2 ? '#facc15' : '#4ade80';
+    return '<div class="stride-row">' +
+      '<div class="stride-label"><span>'+cat+'</span><span class="cnt">'+count+' threat'+(count!==1?'s':'')+'</span></div>' +
+      '<div class="progress"><div class="progress-fill" style="width:'+pct+'%;background:'+color+'"></div></div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderCIPanel(data) {
+  var sum = data.executive_summary || {};
+  var ts  = data.timestamp || new Date().toISOString();
+  var items = [
+    { icon:'🔄', title:'Last Analysis Run',         detail:'STRIDE + dynamic validation via diff-analyzer',                     badge:'info', badgeText: new Date(ts).toLocaleString() },
+    { icon:'📊', title:'Threat Detection',           detail:(sum.total_detected||0)+' detected · '+(sum.total_confirmed||0)+' confirmed dynamically', badge:'pass', badgeText: sum.system_status||'N/A' },
+    { icon:'🔒', title:'Baseline Validation',        detail:'Automated check against security/baseline.json on every push',     badge:'pass', badgeText:'Configured' },
+    { icon:'📦', title:'Artifact: threats-output.json', detail:'Published on every CI run (retention: 30 days)',                badge:'info', badgeText:'Automated' },
+  ];
+  document.getElementById('ciPanel').innerHTML = items.map(function(i){
+    return '<div class="ci-item"><div class="ci-icon">'+i.icon+'</div><div class="ci-info"><div class="ci-title">'+i.title+'</div><div class="ci-detail">'+i.detail+'</div></div><span class="ci-badge '+i.badge+'">'+i.badgeText+'</span></div>';
+  }).join('');
+}
+
+function populateCategoryFilter(threats) {
+  var cats = [];
+  threats.forEach(function(t){ if (cats.indexOf(t.category) === -1) cats.push(t.category); });
+  cats.sort();
+  var sel = document.getElementById('catFilter');
+  cats.forEach(function(c){
+    var o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+}
+
+function renderTable(threats) {
+  var tbody = document.getElementById('threatsBody');
+  var noRes = document.getElementById('noResults');
+  if (threats.length === 0) {
+    tbody.innerHTML = '';
+    noRes.style.display = '';
+    return;
+  }
+  noRes.style.display = 'none';
+  tbody.innerHTML = threats.map(function(t){
+    var confBadge = t.confirmed === true
+      ? '<span class="badge badge-confirm">✓ Confirmed</span>'
+      : '<span class="badge badge-unconf">Unconfirmed</span>';
+    return '<tr>' +
+      '<td><span class="badge badge-cat">'+t.category+'</span></td>' +
+      '<td><strong>'+(t.component||'—')+'</strong></td>' +
+      '<td><span class="badge badge-'+(t.severity||'')+'">'+t.severity+'</span></td>' +
+      '<td><span>'+(t.description||'—')+'</span>'+(t.mitigation?'<div class="threat-desc">💡 '+t.mitigation+'</div>':'')+'</td>' +
+      '<td>'+confBadge+'</td></tr>';
+  }).join('');
+}
+
+function applyFilters() {
+  var q    = document.getElementById('searchBox').value.toLowerCase();
+  var sev  = document.getElementById('sevFilter').value;
+  var cat  = document.getElementById('catFilter').value;
+  var conf = document.getElementById('confFilter').value;
+
+  var filtered = allThreats.filter(function(t){
+    if (sev && t.severity !== sev) return false;
+    if (cat && t.category !== cat) return false;
+    if (conf === 'yes' && t.confirmed !== true) return false;
+    if (conf === 'no'  && t.confirmed === true) return false;
+    if (q) {
+      var haystack = [t.category, t.component, t.description, t.mitigation].join(' ').toLowerCase();
+      if (haystack.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+
+  if (currentSort.field) filtered = sortThreats(filtered, currentSort.field, currentSort.asc);
+  renderTable(filtered);
+}
+
+var SEV_ORDER = { Alta: 0, Media: 1, Baja: 2 };
+function sortThreats(threats, field, asc) {
+  return threats.slice().sort(function(a, b){
+    var va = a[field], vb = b[field];
+    if (field === 'severity')   { va = SEV_ORDER[va]||9; vb = SEV_ORDER[vb]||9; }
+    else if (field === 'confirmed') { va = va===true?0:1; vb = vb===true?0:1; }
+    else { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ?  1 : -1;
+    return 0;
+  });
+}
+
+function sortBy(field) {
+  if (currentSort.field === field) currentSort.asc = !currentSort.asc;
+  else { currentSort.field = field; currentSort.asc = true; }
+  document.querySelectorAll('thead th').forEach(function(th){ th.classList.remove('sorted'); });
+  document.querySelectorAll('thead th').forEach(function(th){
+    if (th.getAttribute('onclick') === "sortBy('"+field+"')") {
+      th.classList.add('sorted');
+      th.querySelector('.sort-icon').textContent = currentSort.asc ? '↑' : '↓';
+    }
+  });
+  applyFilters();
+}
+</script>
 </body>
 </html>

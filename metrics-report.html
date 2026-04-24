@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STRIDE Metrics Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d0d1a; color: #e2e8f0; min-height: 100vh; padding: 24px; }
+    h1 { font-size: 1.8rem; color: #fff; margin-bottom: 4px; }
+    .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 32px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card { background: #1a1a2e; border: 1px solid #2d2d44; border-radius: 8px; padding: 20px; text-align: center; }
+    .card .label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card .value { font-size: 2rem; font-weight: 700; }
+    .card .value.green { color: #4ade80; }
+    .card .value.yellow { color: #facc15; }
+    .card .value.red { color: #f87171; }
+    .card .value.cyan { color: #22d3ee; }
+    section { background: #1a1a2e; border: 1px solid #2d2d44; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+    section h2 { font-size: 1.1rem; color: #fff; margin-bottom: 16px; border-bottom: 1px solid #2d2d44; padding-bottom: 8px; }
+    .chart-wrap { max-width: 500px; margin: 0 auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { text-align: left; padding: 10px 12px; color: #888; font-weight: 600; border-bottom: 1px solid #2d2d44; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    td { padding: 10px 12px; border-bottom: 1px solid #1e1e30; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr.tp td:first-child { color: #4ade80; }
+    tr.fn td:first-child { color: #f87171; }
+    tr.fp td:first-child { color: #facc15; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem; font-weight: 600; }
+    .badge.green { background: rgba(74,222,128,.15); color: #4ade80; border: 1px solid #4ade80; }
+    .badge.red { background: rgba(248,113,113,.15); color: #f87171; border: 1px solid #f87171; }
+    .progress-bar { background: #2d2d44; border-radius: 4px; height: 8px; overflow: hidden; margin-top: 4px; }
+    .progress-fill { height: 100%; border-radius: 4px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    .ts { color: #555; font-size: 0.78rem; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>🔒 STRIDE Metrics Report</h1>
+  <p class="subtitle">Manual vs Automated Analysis Comparison &nbsp;·&nbsp; Generated 2026-04-24T23:53:16.761Z</p>
+
+  <!-- Summary Cards -->
+  <div class="cards">
+    <div class="card">
+      <div class="label">Precision</div>
+      <div class="value green">100.0%</div>
+    </div>
+    <div class="card">
+      <div class="label">Recall</div>
+      <div class="value green">91.0%</div>
+    </div>
+    <div class="card">
+      <div class="label">F1 Score</div>
+      <div class="value green">95.0%</div>
+    </div>
+    <div class="card">
+      <div class="label">STRIDE Coverage</div>
+      <div class="value cyan">83%</div>
+    </div>
+    <div class="card">
+      <div class="label">True Positives</div>
+      <div class="value green">10</div>
+    </div>
+    <div class="card">
+      <div class="label">False Positives</div>
+      <div class="value yellow">0</div>
+    </div>
+    <div class="card">
+      <div class="label">False Negatives</div>
+      <div class="value red">1</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <!-- Radar Chart -->
+    <section>
+      <h2>📡 STRIDE Recall per Category</h2>
+      <div class="chart-wrap">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Per-Severity -->
+    <section>
+      <h2>🎯 Results by Severity</h2>
+      <table>
+        <thead><tr><th>Severity</th><th>TP</th><th>FP</th><th>FN</th></tr></thead>
+        <tbody><tr><td>Alta</td><td class="num">7</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>Media</td><td class="num">3</td><td class="num">0</td><td class="num">1</td></tr>
+<tr><td>Baja</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr></tbody>
+      </table>
+
+      <br>
+      <h2>🔗 STRIDE Coverage</h2>
+      <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem">
+            <span>Spoofing</span>
+            <span style="color:#4ade80">✓ Covered</span>
+          </div>
+        </div><div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem">
+            <span>Tampering</span>
+            <span style="color:#4ade80">✓ Covered</span>
+          </div>
+        </div><div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem">
+            <span>Repudiation</span>
+            <span style="color:#f87171">✗ Missing</span>
+          </div>
+        </div><div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem">
+            <span>InformationDisclosure</span>
+            <span style="color:#4ade80">✓ Covered</span>
+          </div>
+        </div><div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem">
+            <span>DenialOfService</span>
+            <span style="color:#4ade80">✓ Covered</span>
+          </div>
+        </div><div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem">
+            <span>ElevationOfPrivilege</span>
+            <span style="color:#4ade80">✓ Covered</span>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  <!-- Per-Category table -->
+  <section>
+    <h2>📊 Per-Category Metrics</h2>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>TP</th><th>FP</th><th>FN</th><th>Precision</th><th>Recall</th><th>F1</th><th>Covered</th></tr>
+      </thead>
+      <tbody><tr>
+      <td>Spoofing</td>
+      <td class="num">3</td>
+      <td class="num">0</td>
+      <td class="num">0</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td><span class="badge green">✓</span></td>
+    </tr>
+<tr>
+      <td>Tampering</td>
+      <td class="num">2</td>
+      <td class="num">0</td>
+      <td class="num">0</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td><span class="badge green">✓</span></td>
+    </tr>
+<tr>
+      <td>Repudiation</td>
+      <td class="num">0</td>
+      <td class="num">0</td>
+      <td class="num">1</td>
+      <td class="num">0.0%</td>
+      <td class="num">0.0%</td>
+      <td class="num">0.0%</td>
+      <td><span class="badge red">✗</span></td>
+    </tr>
+<tr>
+      <td>InformationDisclosure</td>
+      <td class="num">3</td>
+      <td class="num">0</td>
+      <td class="num">0</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td><span class="badge green">✓</span></td>
+    </tr>
+<tr>
+      <td>DenialOfService</td>
+      <td class="num">1</td>
+      <td class="num">0</td>
+      <td class="num">0</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td><span class="badge green">✓</span></td>
+    </tr>
+<tr>
+      <td>ElevationOfPrivilege</td>
+      <td class="num">1</td>
+      <td class="num">0</td>
+      <td class="num">0</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td class="num">100.0%</td>
+      <td><span class="badge green">✓</span></td>
+    </tr></tbody>
+    </table>
+  </section>
+
+  <!-- TP / FN / FP detail -->
+  <section>
+    <h2>🔍 Threat-level Classification</h2>
+    <table>
+      <thead><tr><th>Result</th><th>Category</th><th>Component</th><th>Severity</th></tr></thead>
+      <tbody>
+        <tr class="tp"><td>✅ TP</td><td>Spoofing</td><td>CORS Attack</td><td>Alta</td></tr>
+<tr class="tp"><td>✅ TP</td><td>Spoofing</td><td>JWT Token Attack</td><td>Alta</td></tr>
+<tr class="tp"><td>✅ TP</td><td>Spoofing</td><td>Session Fixation Attack</td><td>Alta</td></tr>
+<tr class="tp"><td>✅ TP</td><td>Tampering</td><td>SQL Injection Attack</td><td>Alta</td></tr>
+<tr class="tp"><td>✅ TP</td><td>Tampering</td><td>XSS Attack</td><td>Alta</td></tr>
+<tr class="tp"><td>✅ TP</td><td>InformationDisclosure</td><td>Info Leak Attack</td><td>Media</td></tr>
+<tr class="tp"><td>✅ TP</td><td>InformationDisclosure</td><td>Insecure HTTP Headers Attack</td><td>Media</td></tr>
+<tr class="tp"><td>✅ TP</td><td>InformationDisclosure</td><td>Path Traversal Attack</td><td>Alta</td></tr>
+<tr class="tp"><td>✅ TP</td><td>DenialOfService</td><td>Brute Force Attack</td><td>Media</td></tr>
+<tr class="tp"><td>✅ TP</td><td>ElevationOfPrivilege</td><td>Weak Password Attack</td><td>Alta</td></tr>
+        <tr class="fn"><td>❌ FN</td><td>Repudiation</td><td>Audit Log Bypass</td><td>Media</td></tr>
+        
+      </tbody>
+    </table>
+  </section>
+
+  <script>
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ["Spoofing","Tampering","Repudiation","InformationDisclosure","DenialOfService","ElevationOfPrivilege"],
+        datasets: [
+          {
+            label: 'Recall (%)',
+            data: [100,100,0,100,100,100],
+            backgroundColor: 'rgba(34,211,238,0.15)',
+            borderColor: '#22d3ee',
+            pointBackgroundColor: '#22d3ee',
+            borderWidth: 2,
+          },
+          {
+            label: 'Precision (%)',
+            data: [100,100,0,100,100,100],
+            backgroundColor: 'rgba(74,222,128,0.15)',
+            borderColor: '#4ade80',
+            pointBackgroundColor: '#4ade80',
+            borderWidth: 2,
+          }
+        ]
+      },
+      options: {
+        scales: {
+          r: {
+            min: 0,
+            max: 100,
+            ticks: { color: '#888', stepSize: 25 },
+            grid: { color: '#2d2d44' },
+            pointLabels: { color: '#ccc', font: { size: 11 } },
+            angleLines: { color: '#2d2d44' }
+          }
+        },
+        plugins: { legend: { labels: { color: '#ccc' } } }
+      }
+    });
+  </script>
+</body>
+</html>
