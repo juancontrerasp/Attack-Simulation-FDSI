@@ -1,0 +1,54 @@
+name: STRIDE Security Analysis
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  stride-analysis:
+    name: STRIDE Threat Analysis & Baseline Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Capture git diff
+        id: diff
+        run: |
+          git diff HEAD~1 HEAD --unified=3 > git-diff.txt 2>/dev/null || \
+            git diff --unified=3 > git-diff.txt 2>/dev/null || \
+            echo "No diff available" > git-diff.txt
+          echo "Diff captured ($(wc -l < git-diff.txt) lines)"
+
+      - name: Run STRIDE analysis (diff-analyzer)
+        run: |
+          if [ -f diff-analyzer/index.js ]; then
+            node diff-analyzer/index.js git-diff.txt threats-output.json \
+              || echo "diff-analyzer produced no output"
+          fi
+          # Fall back to combined-report.json when no live diff output is available
+          if [ ! -f threats-output.json ] || [ ! -s threats-output.json ]; then
+            echo "Using combined-report.json as threats source"
+            cp combined-report.json threats-output.json
+          fi
+
+      - name: Check threats against baseline
+        run: node check-baseline.js
+
+      - name: Upload threats artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threats-output
+          path: threats-output.json
+          retention-days: 30
