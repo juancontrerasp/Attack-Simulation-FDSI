@@ -608,6 +608,89 @@
 
         .lc-cat-label { font-weight: 400; color: #888; }
         .lc-reason    { margin-top: 4px; }
+
+        /* ── Feedback panel (US-14) ──────────────────────────────────── */
+        .feedback-section {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 4px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .feedback-section h2 {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #2d2d44;
+        }
+
+        .feedback-top {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .fb-gauge-wrap { flex-shrink: 0; width: 130px; }
+        .fb-gauge-wrap svg { width: 100%; height: auto; }
+
+        .fb-summary-text { flex: 1; min-width: 200px; }
+        .fb-summary-text .fb-source { font-size: 0.82em; color: #888; margin-bottom: 6px; }
+        .fb-summary-text .fb-system-summary { font-size: 0.92em; color: #ccc; line-height: 1.55; }
+
+        .fb-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .fb-col-title {
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .fb-col-title.good  { color: #4ade80; }
+        .fb-col-title.fix   { color: #f87171; }
+        .fb-col-title.add   { color: #60a5fa; }
+
+        .fb-item {
+            border-left: 3px solid;
+            border-radius: 3px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            background: #0f0f1e;
+            font-size: 0.82em;
+        }
+
+        .fb-item.fb-good { border-left-color: #4ade80; }
+        .fb-item.fb-fix  { border-left-color: #f87171; }
+        .fb-item.fb-add  { border-left-color: #60a5fa; }
+
+        .fb-item-title { font-weight: 600; color: #fff; margin-bottom: 3px; }
+        .fb-item-sub   { color: #888; line-height: 1.45; }
+
+        .fb-badge-inline {
+            display: inline-block;
+            font-size: 0.72em;
+            padding: 1px 6px;
+            border-radius: 3px;
+            border: 1px solid;
+            margin-right: 4px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .btn-load-feedback {
+            font-size: 0.6em;
+            margin-left: 14px;
+            padding: 4px 12px;
+        }
     </style>
 </head>
 <body>
@@ -699,6 +782,16 @@
             </div>
             <div id="lifecycleGrid">
                 <div class="loading">Load security/threat-registry.json to see lifecycle data</div>
+            </div>
+        </div>
+
+        <!-- Design Feedback Panel (US-14) -->
+        <div class="feedback-section">
+            <h2>Design Security Feedback
+                <button type="button" class="btn-load-feedback" onclick="loadFeedback()">Load design-feedback.json</button>
+            </h2>
+            <div id="feedbackContent">
+                <div class="loading">Load design-feedback.json to see feedback</div>
             </div>
         </div>
     </div>
@@ -1090,6 +1183,110 @@
                 arrow.className = 'trend-arrow stable';
                 sub.textContent = 'No change';
             }
+        }
+
+        // ── Design Feedback Panel (US-14) ─────────────────────────────────────
+
+        const STRIDE_COLOR_MAP = {
+            Spoofing: '#a78bfa', Tampering: '#fb923c', Repudiation: '#facc15',
+            InformationDisclosure: '#38bdf8', DenialOfService: '#f87171', ElevationOfPrivilege: '#4ade80'
+        };
+        const SEV_COLOR_MAP = { Alta: '#f87171', Media: '#fbbf24', Baja: '#60a5fa' };
+
+        function fbScoreColor(s) {
+            return s >= 70 ? '#4ade80' : s >= 40 ? '#fbbf24' : '#f87171';
+        }
+
+        function fbScoreLabel(s) {
+            return s >= 70 ? 'Diseño Seguro' : s >= 40 ? 'Mejoras Necesarias' : 'Alto Riesgo';
+        }
+
+        function fbGaugeSvg(score) {
+            const col = fbScoreColor(score);
+            const r = 70, cx = 100, cy = 100;
+            const circ = Math.PI * r;
+            const filled = (score / 100) * circ;
+            const gap = circ - filled;
+            return `<svg viewBox="0 0 200 115" xmlns="http://www.w3.org/2000/svg">
+  <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}" fill="none" stroke="#2d2d44" stroke-width="18" stroke-linecap="round"/>
+  <path d="M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}" fill="none" stroke="${col}" stroke-width="18"
+        stroke-linecap="round" stroke-dasharray="${filled} ${gap}"/>
+  <text x="${cx}" y="${cy-4}" text-anchor="middle" fill="${col}" font-size="32" font-weight="700" font-family="Segoe UI,sans-serif">${score}</text>
+  <text x="${cx}" y="${cy+18}" text-anchor="middle" fill="#888" font-size="12" font-family="Segoe UI,sans-serif">${escapeHtml(fbScoreLabel(score))}</text>
+</svg>`;
+        }
+
+        function fbBadge(label, col) {
+            return `<span class="fb-badge-inline" style="background:${col}20;color:${col};border-color:${col}">${escapeHtml(label)}</span>`;
+        }
+
+        function renderFeedback(fb) {
+            const score = fb.overall_security_score || 0;
+            const date = fb.metadata && fb.metadata.generated_at
+                ? new Date(fb.metadata.generated_at).toLocaleString()
+                : '';
+
+            const goodRows = (fb.whats_good || []).map(g => {
+                const col = STRIDE_COLOR_MAP[g.stride_impact] || '#888';
+                return `<div class="fb-item fb-good">
+  <div class="fb-item-title">${fbBadge(g.stride_impact, col)} ${escapeHtml(g.aspect)}</div>
+  <div class="fb-item-sub">${escapeHtml(g.why_it_matters)}</div>
+</div>`;
+            }).join('') || '<div class="fb-item-sub" style="color:#555">—</div>';
+
+            const fixRows = (fb.what_to_fix || []).map(f => {
+                const sc = SEV_COLOR_MAP[f.severity] || '#888';
+                const cc = STRIDE_COLOR_MAP[f.stride_category] || '#888';
+                return `<div class="fb-item fb-fix">
+  <div class="fb-item-title">${fbBadge(f.severity, sc)}${fbBadge(f.stride_category, cc)} ${escapeHtml(f.issue)}</div>
+  <div class="fb-item-sub">${escapeHtml(f.how_to_fix)}</div>
+</div>`;
+            }).join('') || '<div class="fb-item-sub" style="color:#555">—</div>';
+
+            const addRows = (fb.what_to_add || []).map(a => {
+                const cc = STRIDE_COLOR_MAP[a.stride_category] || '#888';
+                return `<div class="fb-item fb-add">
+  <div class="fb-item-title">${fbBadge(a.stride_category, cc)} ${escapeHtml(a.missing_control)}</div>
+  <div class="fb-item-sub">${escapeHtml(a.why_needed)}${a.implementation_hint ? `<br><em>${escapeHtml(a.implementation_hint)}</em>` : ''}</div>
+</div>`;
+            }).join('') || '<div class="fb-item-sub" style="color:#555">—</div>';
+
+            return `<div class="feedback-top">
+  <div class="fb-gauge-wrap">${fbGaugeSvg(score)}</div>
+  <div class="fb-summary-text">
+    <div class="fb-source">${escapeHtml((fb.metadata && fb.metadata.source_name) || '')} — ${escapeHtml(date)}</div>
+    <div class="fb-system-summary">${escapeHtml(fb.system_summary || '')}</div>
+  </div>
+</div>
+<div class="fb-columns">
+  <div>
+    <div class="fb-col-title good">✔ Lo que está bien (${(fb.whats_good||[]).length})</div>
+    ${goodRows}
+  </div>
+  <div>
+    <div class="fb-col-title fix">✖ Lo que hay que corregir (${(fb.what_to_fix||[]).length})</div>
+    ${fixRows}
+  </div>
+  <div>
+    <div class="fb-col-title add">+ Lo que hay que agregar (${(fb.what_to_add||[]).length})</div>
+    ${addRows}
+  </div>
+</div>`;
+        }
+
+        function loadFeedback() {
+            fetch('design-feedback.json?' + Date.now())
+                .then(r => {
+                    if (!r.ok) throw new Error('design-feedback.json not found');
+                    return r.json();
+                })
+                .then(fb => {
+                    document.getElementById('feedbackContent').innerHTML = renderFeedback(fb);
+                })
+                .catch(err => {
+                    document.getElementById('feedbackContent').innerHTML =
+                        `<div class="error">${err.message}<br><br>Run: node stride-agent/index.js --file &lt;artefact&gt; --mode feedback</div>`;
+                });
         }
     </script>
 </body>

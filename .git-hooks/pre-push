@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # STRIDE Security Pre-push Hook
-# Final version: ST-03.1 + ST-03.2 + ST-03.3
+# ST-03.1 + ST-03.2 + ST-03.3 + ST-14.4 (design feedback for .mmd/.yaml/OpenAPI/.md)
 
 # Colors
 RED='\033[0;31m'
@@ -12,7 +12,10 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 LOG_FILE=".git/hooks/stride-hook.log"
+SCORE_FILE=".git/hooks/last-feedback-score"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+AGENT="stride-agent/index.js"
 
 # Function: Rotate Log
 rotate_log() {
@@ -40,45 +43,88 @@ else
     DIFF_REF="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 fi
 
-# 3. Filter relevant files
+# 3. Classify changed files
 FILES=$(git diff "$DIFF_REF" --name-only)
-RELEVANT_FILES=""
+RELEVANT_CODE=""
+DESIGN_FILES=""
+
 for file in $FILES; do
-    if [[ "$file" =~ \.(java|js|ts|py)$ ]] && [ -f "$file" ]; then
-        FILE_SIZE=$(wc -c < "$file")
-        if [ "$FILE_SIZE" -le 51200 ]; then
-            RELEVANT_FILES="$RELEVANT_FILES $file"
+    [ ! -f "$file" ] && continue
+    FILE_SIZE=$(wc -c < "$file")
+    [ "$FILE_SIZE" -gt 51200 ] && continue
+
+    if [[ "$file" =~ \.(java|js|ts|py)$ ]]; then
+        RELEVANT_CODE="$RELEVANT_CODE $file"
+    elif [[ "$file" =~ \.mmd$ ]]; then
+        DESIGN_FILES="$DESIGN_FILES $file"
+    elif [[ "$file" =~ \.(yaml|yml)$ ]]; then
+        # Include if it looks like OpenAPI
+        if grep -qiE "^openapi:|^swagger:" "$file" 2>/dev/null; then
+            DESIGN_FILES="$DESIGN_FILES $file"
+        fi
+    elif [[ "$file" =~ \.md$ ]]; then
+        if grep -qiE '```mermaid' "$file" 2>/dev/null; then
+            DESIGN_FILES="$DESIGN_FILES $file"
         fi
     fi
 done
 
-if [ -z "$RELEVANT_FILES" ]; then
+FINAL_EXIT=0
+
+# ── Phase A: STRIDE analysis on code diffs ────────────────────────────────────
+if [ -n "$RELEVANT_CODE" ]; then
+    echo -e "${BLUE}STRIDE: Analizando cambios de código...${NC}"
+    ANALYSIS_RAW=$(git diff "$DIFF_REF" -- $RELEVANT_CODE | node diff-analyzer/index.js 2>&1)
+    CODE_EXIT=$?
+
     rotate_log
-    echo "[$TIMESTAMP] RESULT: OK (No relevant files) | Analyzed: None" >> "$LOG_FILE"
-    exit 0
+    LOG_SUMMARY=$(echo "$ANALYSIS_RAW" | grep "LOG_SUMMARY:" | cut -d' ' -f2-)
+    [ -z "$LOG_SUMMARY" ] && LOG_SUMMARY="Alta=0, Media=0, Baja=0"
+
+    RESULT_STR="OK"
+    if [ $CODE_EXIT -eq 1 ]; then
+        RESULT_STR="BLOCKED"
+        FINAL_EXIT=1
+    elif [[ "$LOG_SUMMARY" == *"Media="[1-9]* ]] || [[ "$LOG_SUMMARY" == *"Baja="[1-9]* ]]; then
+        RESULT_STR="WARNING"
+    fi
+
+    echo "[$TIMESTAMP] CODE: $RESULT_STR | Files: $(echo $RELEVANT_CODE | tr '\n' ' ') | Threats: $LOG_SUMMARY" >> "$LOG_FILE"
+    echo -e "$ANALYSIS_RAW" | grep -v "LOG_SUMMARY:"
+else
+    echo "[$TIMESTAMP] CODE: OK (no relevant code files)" >> "$LOG_FILE"
 fi
 
-echo -e "${BLUE}STRIDE: Iniciando análisis de seguridad en los cambios...${NC}"
+# ── Phase B: Feedback analysis on design files ────────────────────────────────
+if [ -n "$DESIGN_FILES" ]; then
+    echo -e "${BLUE}STRIDE: Analizando artefactos de diseño (modo feedback)...${NC}"
 
-# 4. Capture Diff and Run Analyzer
-ANALYSIS_RAW=$(git diff "$DIFF_REF" -- $RELEVANT_FILES | node diff-analyzer/index.js 2>&1)
-EXIT_CODE=$?
+    for design_file in $DESIGN_FILES; do
+        echo -e "${BLUE}  → $design_file${NC}"
+        FEEDBACK_OUT=".git/hooks/feedback-$(basename "$design_file" | tr '.' '-').json"
 
-# 5. Advanced Logging
-rotate_log
-LOG_SUMMARY=$(echo "$ANALYSIS_RAW" | grep "LOG_SUMMARY:" | cut -d' ' -f2-)
-[ -z "$LOG_SUMMARY" ] && LOG_SUMMARY="Alta=0, Media=0, Baja=0"
+        node "$AGENT" --file "$design_file" --mode feedback \
+            --output "$FEEDBACK_OUT" --no-cache 2>&1
 
-RESULT_STR="OK"
-if [ $EXIT_CODE -eq 1 ]; then
-    RESULT_STR="BLOCKED"
-elif [[ "$LOG_SUMMARY" == *"Media="[1-9]* ]] || [[ "$LOG_SUMMARY" == *"Baja="[1-9]* ]]; then
-    RESULT_STR="WARNING"
+        FB_EXIT=$?
+        if [ $FB_EXIT -ne 0 ]; then
+            echo -e "${YELLOW}[feedback] Advertencia: no se pudo analizar $design_file${NC}"
+        fi
+    done
+
+    # Check last saved score
+    if [ -f "$SCORE_FILE" ]; then
+        LAST_SCORE=$(cat "$SCORE_FILE" 2>/dev/null | tr -d '[:space:]')
+        if [[ "$LAST_SCORE" =~ ^[0-9]+$ ]] && [ "$LAST_SCORE" -lt 20 ]; then
+            echo -e "${YELLOW}[feedback] Score de diseño muy bajo (${LAST_SCORE}/100). Revisa design-feedback.json antes de publicar.${NC}"
+        fi
+        echo "[$TIMESTAMP] FEEDBACK: score=${LAST_SCORE} | Files: $(echo $DESIGN_FILES | tr '\n' ' ')" >> "$LOG_FILE"
+    fi
 fi
 
-echo "[$TIMESTAMP] RESULT: $RESULT_STR | Analyzed: $(echo $RELEVANT_FILES | tr '\n' ' ') | Threats: $LOG_SUMMARY" >> "$LOG_FILE"
+if [ -z "$RELEVANT_CODE" ] && [ -z "$DESIGN_FILES" ]; then
+    rotate_log
+    echo "[$TIMESTAMP] RESULT: OK (No relevant files)" >> "$LOG_FILE"
+fi
 
-# 6. Display Output (excluding the hidden LOG_SUMMARY line)
-echo -e "$ANALYSIS_RAW" | grep -v "LOG_SUMMARY:"
-
-exit $EXIT_CODE
+exit $FINAL_EXIT
