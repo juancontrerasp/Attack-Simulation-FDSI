@@ -123,11 +123,38 @@
           "description": { "type": "string" },
           "evidence": { "type": "string" },
           "severity": { "type": "string", "enum": ["Alta", "Media", "Baja"] },
-          "mitigation": { "type": "string" }
+          "mitigation": { "type": "string" },
+          "control_standard": {
+            "type": "string",
+            "default": "",
+            "description": "Standard de seguridad aplicable (OWASP Top 10 2021, NIST SP 800-53)"
+          },
+          "reference_id": {
+            "type": "string",
+            "default": "",
+            "description": "ID de referencia especifico: CWE-xxx o identificador OWASP"
+          },
+          "implementation_hint": {
+            "type": "string",
+            "default": "",
+            "description": "Codigo real o configuracion concreta para el stack detectado"
+          },
+          "effort_estimate": {
+            "type": "string",
+            "enum": ["Low", "Medium", "High", ""],
+            "default": "",
+            "description": "Esfuerzo estimado: Low=config, Medium=refactoring, High=rediseno arquitectonico"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["ai", "catalog", ""],
+            "default": "",
+            "description": "Origen de la recomendacion: ai (segunda llamada) o catalog (fallback offline)"
+          }
         },
         "additionalProperties": true
       }
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }

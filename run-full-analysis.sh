@@ -13,6 +13,7 @@ NC='\033[0m'
 
 # Defaults
 SKIP_DYNAMIC=false
+SKIP_RECOMMENDATIONS=false
 TARGET_OVERRIDE=""
 
 log() {
@@ -33,7 +34,8 @@ fi
 # --- 2. Parse Arguments ---
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --skip-dynamic) SKIP_DYNAMIC=true; shift ;;
+        --skip-dynamic)          SKIP_DYNAMIC=true; shift ;;
+        --skip-recommendations)  SKIP_RECOMMENDATIONS=true; shift ;;
         --target) TARGET_OVERRIDE="$2"; shift 2 ;;
         *) echo "Opción desconocida: $1"; exit 1 ;;
     esac
@@ -45,6 +47,19 @@ node scripts/full-repo-analyzer.js
 if [ $? -ne 0 ]; then
     echo -e "${RED}Error en el análisis estático.${NC}"
     exit 1
+fi
+
+# --- 3b. Recommendations ---
+if [ "$SKIP_RECOMMENDATIONS" = "true" ]; then
+    log "${YELLOW}Fase 1.5: Omitiendo recomendaciones (--skip-recommendations)${NC}"
+else
+    log "${BOLD}Fase 1.5: Motor de recomendaciones de mitigación${NC}"
+    node stride-agent/recommend.js --threats threats-output.json --in-place --repo .
+    if [ $? -ne 0 ]; then
+        log "${YELLOW}Advertencia: El módulo de recomendaciones falló. Continuando sin enriquecimiento.${NC}"
+    else
+        log "${GREEN}Recomendaciones aplicadas a threats-output.json${NC}"
+    fi
 fi
 
 # --- 4. Health Check & Dynamic Analysis ---

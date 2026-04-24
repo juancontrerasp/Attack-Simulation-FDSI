@@ -262,11 +262,156 @@
             font-size: 0.88em;
         }
 
+        /* STRIDE Threats Panel */
+        .stride-section {
+            margin-top: 40px;
+        }
+
+        .stride-section h2 {
+            font-size: 1.3em;
+            color: #fff;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2d2d44;
+        }
+
+        .threat-card {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-left: 3px solid #4d4d64;
+            border-radius: 4px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+        }
+
+        .threat-card.severity-alta  { border-left-color: #f87171; }
+        .threat-card.severity-media { border-left-color: #fbbf24; }
+        .threat-card.severity-baja  { border-left-color: #4ade80; }
+
+        .threat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .threat-title {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .threat-component {
+            font-size: 0.82em;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .threat-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            padding: 2px 9px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .badge-alta   { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid #f87171; }
+        .badge-media  { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid #fbbf24; }
+        .badge-baja   { background: rgba(74,222,128,0.15);  color: #4ade80; border: 1px solid #4ade80; }
+        .badge-effort-low    { background: rgba(74,222,128,0.12);  color: #4ade80; border: 1px solid #4ade80; }
+        .badge-effort-medium { background: rgba(251,191,36,0.12);  color: #fbbf24; border: 1px solid #fbbf24; }
+        .badge-effort-high   { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid #f87171; }
+        .badge-category { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid #60a5fa; }
+
+        .threat-description {
+            color: #bbb;
+            font-size: 0.87em;
+            line-height: 1.55;
+            margin-bottom: 10px;
+        }
+
+        .threat-fields {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .threat-field {
+            background: rgba(0,0,0,0.25);
+            border-radius: 3px;
+            padding: 8px 12px;
+        }
+
+        .threat-field-label {
+            font-size: 0.72em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .threat-field-value {
+            font-size: 0.84em;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .threat-field-value.monospace {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8em;
+            color: #a8d8a8;
+            white-space: pre-wrap;
+            word-break: break-all;
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 3px;
+            border-left: 2px solid #4ade80;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .threat-reference {
+            font-size: 0.82em;
+            color: #60a5fa;
+        }
+
+        .stride-filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            background: #1a1a2e;
+            border: 1px solid #3d3d54;
+            color: #aaa;
+            padding: 5px 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.82em;
+        }
+
+        .filter-btn.active {
+            background: #2d2d54;
+            border-color: #60a5fa;
+            color: #60a5fa;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.5em;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -282,9 +427,9 @@
         </header>
 
         <div class="controls">
-            <button onclick="loadResults()">Refresh Data</button>
-            <button onclick="toggleAutoRefresh()">Auto-Refresh: <span id="autoRefreshStatus">OFF</span></button>
-            <button onclick="clearData()">Clear Display</button>
+            <button type="button" onclick="loadResults()">Refresh Data</button>
+            <button type="button" onclick="toggleAutoRefresh()">Auto-Refresh: <span id="autoRefreshStatus">OFF</span></button>
+            <button type="button" onclick="clearData()">Clear Display</button>
         </div>
 
         <div class="info-box">
@@ -312,6 +457,23 @@
 
         <div id="systemsGrid">
             <div class="loading">Waiting for data</div>
+        </div>
+
+        <!-- STRIDE Threats Panel (US-11) -->
+        <div class="stride-section">
+            <h2>STRIDE Threat Analysis</h2>
+            <div class="stride-filter-bar" id="strideFilterBar">
+                <button type="button" class="filter-btn active" onclick="filterThreats('all')">All</button>
+                <button type="button" class="filter-btn" onclick="filterThreats('Spoofing')">Spoofing</button>
+                <button type="button" class="filter-btn" onclick="filterThreats('Tampering')">Tampering</button>
+                <button type="button" class="filter-btn" onclick="filterThreats('Repudiation')">Repudiation</button>
+                <button type="button" class="filter-btn" onclick="filterThreats('InformationDisclosure')">Info Disclosure</button>
+                <button type="button" class="filter-btn" onclick="filterThreats('DenialOfService')">DoS</button>
+                <button type="button" class="filter-btn" onclick="filterThreats('ElevationOfPrivilege')">EoP</button>
+            </div>
+            <div id="strideThreatsGrid">
+                <div class="loading">Load threats-output.json to see STRIDE analysis</div>
+            </div>
         </div>
     </div>
 
@@ -423,7 +585,136 @@
 
         window.addEventListener('load', () => {
             setTimeout(loadResults, 500);
+            setTimeout(loadStrideThreats, 700);
         });
+
+        // ── STRIDE Threats Panel ──────────────────────────────────────────
+
+        let allThreats = [];
+        let activeFilter = 'all';
+
+        function loadStrideThreats() {
+            // Try enriched first, fall back to base threats-output
+            fetch('threats-output.json?' + Date.now())
+                .then(r => { if (!r.ok) throw new Error('no file'); return r.json(); })
+                .then(data => renderStrideThreats(data))
+                .catch(() => {
+                    document.getElementById('strideThreatsGrid').innerHTML =
+                        '<div class="loading">No threats-output.json found. Run the STRIDE analysis first.</div>';
+                });
+        }
+
+        function severityClass(s) {
+            if (!s) return '';
+            return 'severity-' + s.toLowerCase();
+        }
+
+        function effortBadgeClass(effort) {
+            if (!effort) return '';
+            const map = { Low: 'badge-effort-low', Medium: 'badge-effort-medium', High: 'badge-effort-high' };
+            return map[effort] || '';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function buildThreatCard(threat) {
+            const hasRec = threat.control_standard || threat.reference_id || threat.implementation_hint;
+            const effortClass = effortBadgeClass(threat.effort_estimate);
+
+            return `
+            <div class="threat-card ${severityClass(threat.severity)}" data-category="${threat.category}">
+                <div class="threat-header">
+                    <div>
+                        <div class="threat-title">${escapeHtml(threat.description || threat.component)}</div>
+                        <div class="threat-component">${escapeHtml(threat.component)}</div>
+                    </div>
+                    <div class="threat-badges">
+                        <span class="badge badge-category">${escapeHtml(threat.category)}</span>
+                        <span class="badge badge-${(threat.severity || '').toLowerCase()}">${escapeHtml(threat.severity)}</span>
+                        ${threat.effort_estimate ? `<span class="badge ${effortClass}">${escapeHtml(threat.effort_estimate)} effort</span>` : ''}
+                    </div>
+                </div>
+                <div class="threat-description">${escapeHtml(threat.description)}</div>
+                ${threat.evidence ? `
+                <div class="threat-field">
+                    <div class="threat-field-label">Evidence</div>
+                    <div class="threat-field-value">${escapeHtml(threat.evidence)}</div>
+                </div>` : ''}
+                ${hasRec ? `
+                <div class="threat-fields">
+                    ${threat.control_standard ? `
+                    <div class="threat-field">
+                        <div class="threat-field-label">Control Standard</div>
+                        <div class="threat-field-value">${escapeHtml(threat.control_standard)}</div>
+                    </div>` : ''}
+                    ${threat.reference_id ? `
+                    <div class="threat-field">
+                        <div class="threat-field-label">Reference</div>
+                        <div class="threat-field-value threat-reference">${escapeHtml(threat.reference_id)}</div>
+                    </div>` : ''}
+                    ${threat.implementation_hint ? `
+                    <div class="threat-field">
+                        <div class="threat-field-label">Implementation Hint</div>
+                        <div class="threat-field-value monospace">${escapeHtml(threat.implementation_hint)}</div>
+                    </div>` : ''}
+                    ${threat.mitigation ? `
+                    <div class="threat-field">
+                        <div class="threat-field-label">Mitigation</div>
+                        <div class="threat-field-value">${escapeHtml(threat.mitigation)}</div>
+                    </div>` : ''}
+                </div>` : (threat.mitigation ? `
+                <div class="threat-field">
+                    <div class="threat-field-label">Mitigation</div>
+                    <div class="threat-field-value">${escapeHtml(threat.mitigation)}</div>
+                </div>` : '')}
+            </div>`;
+        }
+
+        function renderStrideThreats(data) {
+            allThreats = [];
+            const threatsObj = data.threats || {};
+            for (const category of Object.keys(threatsObj)) {
+                for (const t of (threatsObj[category] || [])) {
+                    allThreats.push({ ...t, category: t.category || category });
+                }
+            }
+
+            if (allThreats.length === 0) {
+                document.getElementById('strideThreatsGrid').innerHTML =
+                    '<div class="loading">No threats found in threats-output.json</div>';
+                return;
+            }
+
+            renderFilteredThreats();
+        }
+
+        function renderFilteredThreats() {
+            const grid = document.getElementById('strideThreatsGrid');
+            const filtered = activeFilter === 'all'
+                ? allThreats
+                : allThreats.filter(t => t.category === activeFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="loading">No threats in this category</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(buildThreatCard).join('');
+        }
+
+        function filterThreats(category) {
+            activeFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderFilteredThreats();
+        }
     </script>
 </body>
 </html>
