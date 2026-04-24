@@ -1,0 +1,32 @@
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+    include-exception: false
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:securedb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  h2:
+    console:
+      enabled: false
+
+jwt:
+  # Minimum 256 bits (32 bytes) required for HS256. Use RSA key pair in production.
+  secret: "SecureApp-JWT-HS256-Secret-For-Dev-MinimumOf256BitsRequired-PadIfNeeded"
+  expiration-ms: 3600000
+
+logging:
+  level:
+    root: WARN
+    com.secureapp: INFO
+    org.springframework.security: WARN
