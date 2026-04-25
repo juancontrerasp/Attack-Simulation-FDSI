@@ -197,9 +197,7 @@ async function buildInputContext(args, provider) {
       totalChars: repoContext.totalChars
     };
 
-    contextToSend = provider === 'ollama'
-      ? architectureContext.slice(0, Number(process.env.OLLAMA_CONTEXT_CHARS || 6000))
-      : architectureContext;
+    contextToSend = architectureContext;
 
     sourceName = repoContext.repoName;
     inputType  = 'repo';
@@ -234,7 +232,7 @@ async function runStride(args, contextToSend, sourceName, inputType, repoMeta, p
   if (!normalized) {
     let rawResponse = '';
     let correctionMessage = null;
-    const maxCorrectionRetries = provider === 'ollama' ? 0 : 2;
+    const maxCorrectionRetries = 2;
 
     while (correctionRetries <= maxCorrectionRetries) {
       rawResponse = await analyzeArchitecture(contextToSend, { correctionMessage });
@@ -403,7 +401,7 @@ async function runFeedback(args, contextToSend, sourceName, inputType, repoMeta,
   if (!normalized) {
     let rawResponse = '';
     let correctionMessage = null;
-    const maxCorrectionRetries = provider === 'ollama' ? 0 : 2;
+    const maxCorrectionRetries = 2;
 
     while (correctionRetries <= maxCorrectionRetries) {
       rawResponse = await analyzeArchitecture(contextToSend, {

@@ -161,7 +161,77 @@ STRIDE Coverage = 2/6 × 100 = 33.3%
 
 ---
 
-## 6. Referencias
+## 6. Métricas adicionales del paper (US-08)
+
+### Cobertura Total (Total Coverage)
+
+Mide qué proporción **cuantitativa** de amenazas produce el agente con respecto al análisis manual.
+A diferencia de Recall (que requiere matching individual), esta métrica compara solo los conteos.
+
+```text
+Cobertura Total (%) = |amenazas_agente| / |amenazas_manuales_inseguro| × 100
+```
+
+- Puede superar 100% si el agente detecta más amenazas que el equipo manual.
+- Complementaria al Recall: informa sobre la _cantidad_ relativa, no solo el solapamiento.
+
+---
+
+### Tasa de Falsos Positivos (False Positive Rate)
+
+Porcentaje de las amenazas del agente que **no fueron identificadas manualmente**.
+
+```text
+FP Rate (%) = FP / |amenazas_agente| × 100
+```
+
+Equivale a `1 - Precision` expresado como porcentaje del total automatizado (no del total manual).
+
+---
+
+### Ratio de Velocidad (Speedup Ratio)
+
+Cuántas veces más rápido es el análisis automatizado frente al manual.
+
+```text
+Speedup = tiempo_manual (s) / tiempo_automatizado (s)
+```
+
+- Un ratio ≥ 10 es el umbral mínimo requerido por US-08.
+- Los tiempos se extraen del campo `analysisTimeSeconds` en los metadatos de cada JSON.
+
+---
+
+### Ratio de Diferenciación (Differentiation Ratio)
+
+Mide la capacidad de los dos enfoques para **distinguir** sistemas inseguros de seguros,
+en función de la diferencia en la cantidad de amenazas detectadas.
+
+```text
+Diferenciación = |amenazas_inseguro| / |amenazas_seguro|
+```
+
+- Un ratio ≥ 1.4 indica que el análisis detecta al menos un 40% más de amenazas en el sistema inseguro.
+- Se calcula tanto para el análisis manual como para el automatizado (cuando están disponibles).
+
+---
+
+### Análisis por Formato de Entrada
+
+Compara la cobertura del agente cuando el **mismo sistema** se proporciona en distintos formatos:
+
+| Formato | Archivo esperado |
+|---------|-----------------|
+| Código fuente (Java) | `threats-output-code.json` |
+| Diagrama Mermaid | `threats-output-mermaid.json` |
+| Imagen del diagrama | `threats-output-image.json` |
+
+Para cada formato se calculan Recall, Precision, F1, Cobertura total y Cobertura STRIDE.
+Esto evidencia la ventaja del enfoque _formato-agnóstico_.
+
+---
+
+## 7. Referencias
 
 - STRIDE: [Microsoft STRIDE Threat Modeling](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)
 - Precision/Recall: [Wikipedia – Precision and recall](https://en.wikipedia.org/wiki/Precision_and_recall)

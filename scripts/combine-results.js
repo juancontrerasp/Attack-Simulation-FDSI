@@ -1,5 +1,29 @@
 const fs = require('fs');
 
+function normalizeJavaResults(raw) {
+    if (Array.isArray(raw)) {
+        return raw;
+    }
+
+    if (raw && Array.isArray(raw.systems)) {
+        const flattened = [];
+        raw.systems.forEach(system => {
+            if (!system || !Array.isArray(system.attacks)) return;
+            system.attacks.forEach(attack => {
+                flattened.push({
+                    ...attack,
+                    attack_name: attack.attack_name || attack.name || '',
+                    system_name: system.name || null,
+                    system_url: system.url || null,
+                });
+            });
+        });
+        return flattened;
+    }
+
+    return [];
+}
+
 function run() {
     console.log("📊 Combinando resultados de análisis...");
 
@@ -12,7 +36,8 @@ function run() {
     let javaResults = [];
     if (fs.existsSync('results.json')) {
         try {
-            javaResults = JSON.parse(fs.readFileSync('results.json', 'utf-8'));
+            const parsed = JSON.parse(fs.readFileSync('results.json', 'utf-8'));
+            javaResults = normalizeJavaResults(parsed);
         } catch (e) {
             console.warn("⚠️ Advertencia: results.json no es un JSON válido o está vacío.");
         }
@@ -35,7 +60,7 @@ function run() {
             
             // Filter results related to this category
             const relatedResults = javaResults.filter(res => 
-                categoryMapping.includes(res.attack_class.replace('Attack', ''))
+                categoryMapping.includes((res.attack_class || '').replace('Attack', ''))
             );
 
             // Logic for confirmation
@@ -53,9 +78,9 @@ function run() {
                 confirmedStatus = true;
                 stats.confirmed++;
                 dynamicEvidence = {
-                    attack: confirmation.attack_name,
-                    evidence: confirmation.evidence,
-                    response_code: confirmation.response_code
+                    attack: confirmation.attack_name || confirmation.name || null,
+                    evidence: confirmation.evidence || confirmation.details || null,
+                    response_code: confirmation.response_code || null
                 };
             } else if (negativeConfirmation) {
                 confirmedStatus = false;

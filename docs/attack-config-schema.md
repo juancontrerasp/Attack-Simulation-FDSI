@@ -86,7 +86,7 @@ Passwords are read from `passwords_file` up to this limit.
 
 Path to a plain-text file containing one password per line, used by the
 `BruteForce` attack. Path is relative to the directory where `launch_attack.sh`
-is executed (project root).
+or `launch_attack.ps1` is executed (project root).
 
 | Detail | Value |
 |---|---|

@@ -37,7 +37,7 @@ timeout_ms: 5000
 max_passwords: 100
 
 # OPTIONAL — Ruta al archivo de contrasenas para BruteForce.
-# Relativa al directorio desde donde se ejecuta launch_attack.sh.
+# Relativa al directorio desde donde se ejecuta el launcher (launch_attack.ps1 o launch_attack.sh).
 passwords_file: passwords.txt
 
 # OPTIONAL — Lista de ataques a ejecutar.

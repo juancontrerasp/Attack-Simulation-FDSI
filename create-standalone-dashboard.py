@@ -7,11 +7,19 @@ Generates dashboard-standalone.html with:
 - hard size limit: < 2MB
 """
 
+import io
 import json
 import re
 import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
+
+# On Windows the default stdout encoding may be cp1252 which can't print emoji.
+# Reconfigure to UTF-8 so print() works regardless of terminal locale.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 MAX_SIZE_BYTES = 2 * 1024 * 1024
@@ -22,6 +30,16 @@ ACTIONS_API = "https://api.github.com/repos/juancontrerasp/Attack-Simulation-FDS
 def fetch_chartjs_inline():
     with urlopen(CHART_JS_CDN, timeout=15) as response:
         return response.read().decode("utf-8")
+
+
+def safe_json(data):
+    """Serialize data to JSON and escape </script> so it can be safely embedded
+    inside an HTML <script> block without the browser closing the block early."""
+    raw = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    # The HTML parser closes a <script> block at the literal text </script>
+    # regardless of JS string context. Replace with the escape sequence <\/script>
+    # which is valid JSON (forward slash may be escaped) and identical at runtime.
+    return raw.replace("</script>", r"<\/script>").replace("</Script>", r"<\/Script>")
 
 
 def fetch_latest_pipeline():
@@ -91,33 +109,24 @@ def create_standalone_dashboard():
     except Exception:
         pipeline_data = None
 
-    # ── Embed report data ─────────────────────────────────────────────────────
-    data_js = json.dumps(report_data, ensure_ascii=False, separators=(",", ":"))
-    baseline_js = json.dumps(baseline_data, ensure_ascii=False, separators=(",", ":"))
-    pipeline_js = json.dumps(pipeline_data, ensure_ascii=False, separators=(",", ":"))
+    # ── Embed report data (escape </script> to prevent HTML parser break) ────────
+    data_js     = safe_json(report_data)
+    baseline_js = safe_json(baseline_data)
+    pipeline_js = safe_json(pipeline_data)
 
-    # Replace the fetch call with embedded data so the file works via file://
-    fetch_pattern = "fetch('combined-report.json?' + Date.now())"
-    embedded = (
-        "Promise.resolve({"
-        "ok: true, "
-        "json: function() { return Promise.resolve(" + data_js + "); }"
-        "})"
-    )
-
-    if fetch_pattern not in dashboard_content:
-        print("⚠️  Warning: fetch pattern not found in dashboard.html – the standalone")
-        print("   file may not work correctly. Check dashboard.html for fetch() calls.")
-
-    standalone = dashboard_content.replace(fetch_pattern, embedded)
-
+    # Inject all three datasets as window globals before </head>.
+    # dashboard.html checks window.__EMBEDDED_REPORT__ in boot() and skips fetch().
     embedded_vars_script = (
         "<script>"
         f"window.__EMBEDDED_BASELINE__={baseline_js};"
         f"window.__EMBEDDED_PIPELINE__={pipeline_js};"
+        f"window.__EMBEDDED_REPORT__={data_js};"
         "</script>"
     )
-    standalone = standalone.replace("</head>", embedded_vars_script + "\n</head>", 1)
+    standalone = dashboard_content.replace("</head>", embedded_vars_script + "\n</head>", 1)
+
+    if "window.__EMBEDDED_REPORT__" not in standalone:
+        print("⚠️  Warning: __EMBEDDED_REPORT__ injection failed – check dashboard.html structure.")
 
     # ── Embed Chart.js inline for offline support ─────────────────────────────
     print("📦 Embedding Chart.js inline…")

@@ -22,7 +22,7 @@ async function withRetry(fn, maxRetries = 2) {
 
 function resolveProvider() {
   const devMode = process.env.DEV_MODE === 'true';
-  const provider = devMode ? 'mock' : (process.env.AI_PROVIDER || 'mock');
+  const provider = devMode ? 'mock' : 'azure';
   return { devMode, provider };
 }
 
@@ -39,17 +39,8 @@ async function analyzeArchitecture(architectureContext, options = {}) {
   const buildMsg = customBuilder || buildUserMessage;
   const userMessage = correctionMessage || buildMsg(architectureContext);
 
-  if (provider === 'azure') {
-    const azure = require('./azure');
-    return withRetry(() => azure.analyze(activeSystemPrompt, userMessage));
-  }
-
-  if (provider === 'ollama') {
-    const ollama = require('./ollama');
-    return withRetry(() => ollama.analyze(activeSystemPrompt, userMessage));
-  }
-
-  throw new Error(`Proveedor no soportado: ${provider}. Usa AI_PROVIDER=azure|ollama o DEV_MODE=true`);
+  const azure = require('./azure');
+  return withRetry(() => azure.analyze(activeSystemPrompt, userMessage));
 }
 
 module.exports = {

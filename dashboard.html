@@ -46,6 +46,7 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       background: rgba(17, 24, 39, 0.92);
+      -webkit-backdrop-filter: blur(4px);
       backdrop-filter: blur(4px);
       position: sticky;
       top: 8px;
@@ -129,6 +130,7 @@
       font-size: 0.8rem;
       background: #0b1220;
       cursor: pointer;
+      -webkit-user-select: none;
       user-select: none;
       display: inline-flex;
       align-items: center;
@@ -393,6 +395,7 @@
   <script>
     window.__EMBEDDED_BASELINE__ = window.__EMBEDDED_BASELINE__ || null;
     window.__EMBEDDED_PIPELINE__ = window.__EMBEDDED_PIPELINE__ || null;
+    window.__EMBEDDED_REPORT__   = window.__EMBEDDED_REPORT__   || null;
 
     const STRIDE_CATEGORIES = [
       'Spoofing', 'Tampering', 'Repudiation', 'InformationDisclosure', 'DenialOfService', 'ElevationOfPrivilege'
@@ -864,17 +867,33 @@
       state.baseline = baseline;
       state.pipeline = pipeline;
 
-      fetch('combined-report.json?' + Date.now())
-        .then((r) => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.json();
-        })
+      const embeddedReport = window.__EMBEDDED_REPORT__;
+      const reportLoader = embeddedReport
+        ? Promise.resolve(embeddedReport)
+        : fetch('combined-report.json?' + Date.now())
+            .then((r) => {
+              if (!r.ok) throw new Error(`HTTP ${r.status}`);
+              return r.json();
+            })
+            .catch((err) => {
+              if (window.location.protocol === 'file:') {
+                throw new Error(
+                  'El dashboard requiere un servidor HTTP. ' +
+                  'Ejecuta: python serve_dashboard.py · ' +
+                  'O usa dashboard-standalone.html para uso sin conexión.'
+                );
+              }
+              throw err;
+            });
+
+      reportLoader
         .then((data) => {
           initDashboard(data);
           document.getElementById('loading').textContent = 'Dashboard ready.';
         })
         .catch((error) => {
-          document.getElementById('loading').innerHTML = `<div class="empty">Failed to load combined-report.json: ${error.message}</div>`;
+          document.getElementById('loading').innerHTML =
+            `<div class="empty">⚠️ ${error.message}</div>`;
         });
     }
 
