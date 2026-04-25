@@ -1,0 +1,37 @@
+graph TD
+    subgraph Internet[Internet - Untrusted Zone]
+        Actor[External User / Browser]
+    end
+
+    subgraph DMZ[DMZ - Perimeter Defense]
+        WAF[WAF - OWASP CRS Rules v3.3]
+        Gateway[API Gateway - Rate Limiting and TLS Termination]
+    end
+
+    subgraph Internal[Internal Network - Application Tier]
+        Frontend[Frontend - React SPA with CSP Headers]
+        API[API Backend - Spring Boot with JWT Validation]
+        AuthSvc[Auth Service - BCrypt cost 12 and Session Management]
+        MFA[MFA Provider - TOTP RFC 6238]
+    end
+
+    subgraph DataZone[Data Zone - Encrypted Storage]
+        DB[PostgreSQL - AES-256 Encryption at Rest]
+        Vault[Key Vault - HashiCorp Vault Secret Rotation]
+    end
+
+    Actor -->|HTTPS TLS 1.3 only - HTTP rejected| WAF
+    WAF -->|XSS and SQLi payloads filtered - clean requests only| Gateway
+    Gateway -->|Rate limit 5 req per min per IP - 429 on excess| API
+    Gateway -->|Static assets HTTPS CDN| Frontend
+    API -->|JWT Bearer RS256 signed - algorithm none rejected| AuthSvc
+    AuthSvc -->|TOTP code verification - 30s window| MFA
+    MFA -->|OTP code via secure channel| Actor
+    AuthSvc -->|PreparedStatement queries - no string concatenation| DB
+    API -->|Parameterized SQL only - no dynamic concatenation| DB
+    DB -->|Encryption key rotation every 90 days| Vault
+
+    style Internet fill:#ffebee,stroke:#ef5350,color:#000
+    style DMZ fill:#fff8e1,stroke:#ffc107,color:#000
+    style Internal fill:#e8f5e9,stroke:#4caf50,color:#000
+    style DataZone fill:#e3f2fd,stroke:#2196f3,color:#000

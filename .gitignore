@@ -25,6 +25,19 @@ replay_pid*
 
 # Attack simulation results
 results.json
+combined-report.json
+metrics-report.json
+metrics-report.html
+dashboard-standalone.html
+dashboard.html
+demo-preflight-report.json
+design-feedback.json
+design-feedback.html
+insecure-feedback.json
+insecure-feedback.html
+secure-feedback.json
+secure-feedback.html
+secure-threats.json
 
 .idea
 
@@ -34,3 +47,36 @@ QUICKSTART.md
 ATTACKS_INFO.md
 
 GITHUB_ACTIONS_INTEGRATION.md
+
+# Node dependencies
+node_modules/
+stride-agent/node_modules/
+
+# Local assistant / editor metadata
+.claude/
+
+# Local environment and editor
+.env
+.vscode/
+
+# Java build outputs
+target/
+**/target/
+
+# Generated analysis outputs
+threats-output.json
+threats-compare-output.json
+
+# Generated paper / demo exports
+IEEE_Paper_Attack_Simulation_FINAL.tex
+IEEE_Paper_Attack_Simulation_v2.tex
+
+# TypeScript build cache
+out/
+
+# Security test data (not for version control)
+passwords.txt
+
+# Root-level manual analysis copies (canonical versions live in threat-models/)
+manual-analysis-insecure.json
+manual-analysis-secure.json

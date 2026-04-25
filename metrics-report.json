@@ -1,0 +1,320 @@
+{
+  "generated_at": "2026-04-25T05:30:04.305Z",
+  "sources": {
+    "manual_insecure": "C:\\Users\\Geme\\Desktop\\Attack-Simulation-FDSI\\threat-models\\manual-analysis-insecure.json",
+    "manual_secure": "C:\\Users\\Geme\\Desktop\\Attack-Simulation-FDSI\\threat-models\\manual-analysis-secure.json",
+    "automated": "C:\\Users\\Geme\\Desktop\\Attack-Simulation-FDSI\\threats-output.json"
+  },
+  "paper_metrics": {
+    "manualInsecureCount": 20,
+    "manualSecureCount": 8,
+    "automatedCount": 9,
+    "totalCoverage": 45,
+    "recall": 0.45,
+    "precision": 1,
+    "f1": 0.62,
+    "falsePositiveRate": 0,
+    "strideCoverage": 83.33,
+    "strideCategorisCovered": 5,
+    "manualTimeSeconds": 5400,
+    "automatedTimeSeconds": 9.93,
+    "speedupRatio": 543.81,
+    "differentiationRatioManual": 2.5,
+    "differentiationRatioAuto": null
+  },
+  "format_comparison": {
+    "code": {
+      "label": "Code (Java)",
+      "file": "threats-output.json",
+      "threatsCount": 9,
+      "precision": 1,
+      "recall": 0.45,
+      "f1": 0.62,
+      "strideCoverage": 83.33,
+      "coveredCategories": [
+        "Spoofing",
+        "Tampering",
+        "InformationDisclosure",
+        "DenialOfService",
+        "ElevationOfPrivilege"
+      ],
+      "totalCoverage": 45
+    },
+    "mermaid": null,
+    "image": null
+  },
+  "metrics": {
+    "summary": {
+      "tp": 9,
+      "fp": 0,
+      "fn": 11,
+      "precision": 1,
+      "recall": 0.45,
+      "f1": 0.62,
+      "strideCoverage": 83.33,
+      "coveredCategories": [
+        "Spoofing",
+        "Tampering",
+        "InformationDisclosure",
+        "DenialOfService",
+        "ElevationOfPrivilege"
+      ]
+    },
+    "perCategory": {
+      "Spoofing": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.75,
+        "f1": 0.86,
+        "covered": true
+      },
+      "Tampering": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1,
+        "recall": 0.5,
+        "f1": 0.67,
+        "covered": true
+      },
+      "Repudiation": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 3,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "covered": false
+      },
+      "InformationDisclosure": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.67,
+        "f1": 0.8,
+        "covered": true
+      },
+      "DenialOfService": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1,
+        "recall": 0.33,
+        "f1": 0.5,
+        "covered": true
+      },
+      "ElevationOfPrivilege": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1,
+        "recall": 0.33,
+        "f1": 0.5,
+        "covered": true
+      }
+    },
+    "perSeverity": {
+      "Alta": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 5
+      },
+      "Media": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 6
+      },
+      "Baja": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "annotatedManual": [
+      {
+        "category": "Spoofing",
+        "component": "CorsAttack",
+        "description": "Wildcard origin policy allows credentialed cross-origin abuse.",
+        "evidence": "Access-Control-Allow-Origin: *",
+        "severity": "Alta",
+        "mitigation": "Restrict CORS to explicit trusted origins.",
+        "_matched": true
+      },
+      {
+        "category": "Spoofing",
+        "component": "JwtTokenAttack",
+        "description": "Token validation path accepts manipulated JWT payloads.",
+        "evidence": "Tampered JWT accepted by auth endpoint.",
+        "severity": "Alta",
+        "mitigation": "Verify signature, issuer and audience on every request.",
+        "_matched": true
+      },
+      {
+        "category": "Spoofing",
+        "component": "SessionFixationAttack",
+        "description": "Session identifier is reused after login.",
+        "evidence": "Same session ID before/after authentication.",
+        "severity": "Alta",
+        "mitigation": "Rotate session ID on successful authentication.",
+        "_matched": true
+      },
+      {
+        "category": "Spoofing",
+        "component": "IdentitySpoofHeader",
+        "description": "Trust in client-supplied identity headers allows impersonation.",
+        "evidence": "X-User header consumed without signature or gateway verification.",
+        "severity": "Media",
+        "mitigation": "Accept identity only from signed tokens or trusted proxy headers.",
+        "_matched": false
+      },
+      {
+        "category": "Tampering",
+        "component": "SqlInjectionAttack",
+        "description": "Dynamic SQL composition permits query manipulation.",
+        "evidence": "Injected payload changes authentication result.",
+        "severity": "Alta",
+        "mitigation": "Use prepared statements and strict input validation.",
+        "_matched": true
+      },
+      {
+        "category": "Tampering",
+        "component": "XssAttack",
+        "description": "Reflected payload executes in browser context.",
+        "evidence": "Injected script appears unsanitized in response body.",
+        "severity": "Alta",
+        "mitigation": "Encode output and sanitize all user-controlled input.",
+        "_matched": true
+      },
+      {
+        "category": "Tampering",
+        "component": "PathTraversalAttack",
+        "description": "Path traversal allows modification or unauthorized file access workflow.",
+        "evidence": "../ sequences reach protected paths.",
+        "severity": "Alta",
+        "mitigation": "Canonicalize path and enforce allow-list constraints.",
+        "_matched": false
+      },
+      {
+        "category": "Tampering",
+        "component": "ConfigTamperAttack",
+        "description": "Runtime configuration values can be overridden from untrusted inputs.",
+        "evidence": "Unsafe merge of request payload into config object.",
+        "severity": "Media",
+        "mitigation": "Lock configuration keys and validate update channels.",
+        "_matched": false
+      },
+      {
+        "category": "Repudiation",
+        "component": "AuditLogBypass",
+        "description": "Critical actions can execute without auditable event trail.",
+        "evidence": "Authentication and admin flows emit incomplete logs.",
+        "severity": "Media",
+        "mitigation": "Emit structured immutable logs for security-relevant events.",
+        "_matched": false
+      },
+      {
+        "category": "Repudiation",
+        "component": "ActionNonRepudiationGap",
+        "description": "No user-bound correlation ID is attached to sensitive actions.",
+        "evidence": "Write operations logged without actor identifier.",
+        "severity": "Media",
+        "mitigation": "Attach signed actor + correlation IDs to all state changes.",
+        "_matched": false
+      },
+      {
+        "category": "Repudiation",
+        "component": "LogIntegrityGap",
+        "description": "Logs can be altered post-write in current storage setup.",
+        "evidence": "Flat file logs writable by app process.",
+        "severity": "Alta",
+        "mitigation": "Use append-only centralized logging with integrity controls.",
+        "_matched": false
+      },
+      {
+        "category": "InformationDisclosure",
+        "component": "InfoLeakAttack",
+        "description": "Error message variance enables account enumeration.",
+        "evidence": "Different messages for valid vs invalid users.",
+        "severity": "Media",
+        "mitigation": "Return uniform authentication failure responses.",
+        "_matched": true
+      },
+      {
+        "category": "InformationDisclosure",
+        "component": "InsecureHeadersAttack",
+        "description": "Missing security headers reveal attack surface and reduce browser hardening.",
+        "evidence": "Absent CSP, HSTS, X-Frame-Options.",
+        "severity": "Media",
+        "mitigation": "Set a hardened default security header profile.",
+        "_matched": true
+      },
+      {
+        "category": "InformationDisclosure",
+        "component": "SecretExposureAttack",
+        "description": "Sensitive values can leak through verbose diagnostics.",
+        "evidence": "Token fragments present in debug output.",
+        "severity": "Alta",
+        "mitigation": "Mask secrets in logs and disable verbose production traces.",
+        "_matched": false
+      },
+      {
+        "category": "DenialOfService",
+        "component": "BruteForceAttack",
+        "description": "Login endpoint lacks adaptive throttling.",
+        "evidence": "High-volume attempts accepted without progressive delay.",
+        "severity": "Alta",
+        "mitigation": "Apply per-user and per-IP rate limiting plus lockout.",
+        "_matched": true
+      },
+      {
+        "category": "DenialOfService",
+        "component": "ResourceExhaustionAttack",
+        "description": "Unbounded request payload processing can exhaust memory.",
+        "evidence": "Large payload path has no early limit checks.",
+        "severity": "Media",
+        "mitigation": "Enforce body size limits and streaming guards.",
+        "_matched": false
+      },
+      {
+        "category": "DenialOfService",
+        "component": "RequestFloodAttack",
+        "description": "Expensive endpoint can be abused for compute starvation.",
+        "evidence": "No queue or circuit-breaker around costly operation.",
+        "severity": "Alta",
+        "mitigation": "Introduce circuit breaker and bounded worker pool.",
+        "_matched": false
+      },
+      {
+        "category": "ElevationOfPrivilege",
+        "component": "WeakPasswordAttack",
+        "description": "Weak credentials allow rapid compromise of accounts.",
+        "evidence": "Passwords like 123456 are accepted.",
+        "severity": "Alta",
+        "mitigation": "Enforce strong password policy and breach password blocklist.",
+        "_matched": true
+      },
+      {
+        "category": "ElevationOfPrivilege",
+        "component": "RoleEscalationAttack",
+        "description": "Role assignment path allows user-controlled privilege value.",
+        "evidence": "Client role field reaches persistence layer unsafely.",
+        "severity": "Alta",
+        "mitigation": "Server-side enforce role mapping independent of client input.",
+        "_matched": false
+      },
+      {
+        "category": "ElevationOfPrivilege",
+        "component": "PrivilegeBoundaryBypass",
+        "description": "Admin actions are missing explicit authorization guard in one flow.",
+        "evidence": "Endpoint reachable with authenticated non-admin account.",
+        "severity": "Media",
+        "mitigation": "Add RBAC checks in middleware and endpoint handler.",
+        "_matched": false
+      }
+    ],
+    "fpThreats": []
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "cached_at": "2026-04-25T01:49:12.582Z",
+  "normalized": {
+    "artefact_type": "repo",
+    "system_summary": "El repositorio contiene una arquitectura de referencia segura que implementa controles de seguridad contra vulnerabilidades de API según OWASP. Incluye scripts para comparar arquitecturas inseguras y seguras, así como una especificación OpenAPI para la API segura.",
+    "whats_good": [
+      {
+        "aspect": "Autenticación JWT RS256 con verificación de firma",
+        "why_it_matters": "Previene la suplantación de identidad al garantizar que solo los usuarios autenticados puedan acceder a los recursos.",
+        "stride_impact": "Spoofing"
+      },
+      {
+        "aspect": "Limitación de tasa en el endpoint /login",
+        "why_it_matters": "Protege contra ataques de fuerza bruta y agotamiento de recursos al limitar el número de intentos de inicio de sesión.",
+        "stride_impact": "DenialOfService"
+      },
+      {
+        "aspect": "Validación de entradas en las solicitudes",
+        "why_it_matters": "Evita inyecciones SQL y otros ataques al asegurarse de que los datos de entrada cumplan con patrones específicos.",
+        "stride_impact": "Tampering"
+      },
+      {
+        "aspect": "Registros de auditoría inmutables",
+        "why_it_matters": "Permite rastrear acciones y eventos, lo que es crucial para la responsabilidad y la detección de fraudes.",
+        "stride_impact": "Repudiation"
+      },
+      {
+        "aspect": "Mensajes de error genéricos",
+        "why_it_matters": "Previene la divulgación de información sensible que podría ser utilizada para ataques de enumeración de usuarios.",
+        "stride_impact": "InformationDisclosure"
+      },
+      {
+        "aspect": "Uso de encabezados de seguridad HTTP",
+        "why_it_matters": "Ayuda a proteger contra ataques como clickjacking y XSS al establecer políticas de seguridad en las respuestas HTTP.",
+        "stride_impact": "Tampering"
+      }
+    ],
+    "what_to_fix": [
+      {
+        "issue": "Falta de gestión segura de secretos para el secreto JWT en desarrollo",
+        "stride_category": "Tampering",
+        "severity": "Alta",
+        "how_to_fix": "Utilizar un gestor de secretos como HashiCorp Vault o AWS Secrets Manager para almacenar el secreto JWT en lugar de tenerlo en texto plano en el archivo de configuración."
+      }
+    ],
+    "what_to_add": [
+      {
+        "missing_control": "Limitación de tasa en otros endpoints críticos",
+        "why_needed": "Evita ataques de denegación de servicio en otros puntos de entrada de la API.",
+        "stride_category": "DenialOfService",
+        "implementation_hint": "Agregar limitación de tasa similar a la del endpoint /login en otros endpoints sensibles como /register y /api/auth/me."
+      },
+      {
+        "missing_control": "Gestión de secretos para la base de datos",
+        "why_needed": "Proteger las credenciales de la base de datos de accesos no autorizados.",
+        "stride_category": "Tampering",
+        "implementation_hint": "Almacenar las credenciales de la base de datos en un gestor de secretos y referenciarlas en el archivo de configuración."
+      }
+    ],
+    "overall_security_score": 85
+  }
+}

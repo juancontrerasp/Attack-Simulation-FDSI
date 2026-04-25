@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "design-feedback-schema.json",
+  "title": "Design Security Feedback",
+  "description": "Schema for the output of --mode feedback in the STRIDE agent",
+  "type": "object",
+  "required": ["metadata", "artefact_type", "system_summary", "whats_good", "what_to_fix", "what_to_add", "overall_security_score"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["generated_at", "source_name", "input_type", "provider"],
+      "properties": {
+        "generated_at":         { "type": "string", "format": "date-time" },
+        "source_name":          { "type": "string" },
+        "input_type":           { "type": "string", "enum": ["diagram", "code", "openapi", "image", "repo"] },
+        "provider":             { "type": "string" },
+        "dev_mode":             { "type": "boolean" },
+        "cache_hit":            { "type": "boolean" },
+        "analysis_time_seconds":{ "type": "number" },
+        "correction_retries":   { "type": "integer", "minimum": 0 }
+      }
+    },
+    "artefact_type": {
+      "type": "string",
+      "enum": ["diagram", "code", "openapi", "image", "repo"]
+    },
+    "system_summary": { "type": "string" },
+    "whats_good": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["aspect", "why_it_matters", "stride_impact"],
+        "properties": {
+          "aspect":         { "type": "string" },
+          "why_it_matters": { "type": "string" },
+          "stride_impact":  {
+            "type": "string",
+            "enum": ["Spoofing","Tampering","Repudiation","InformationDisclosure","DenialOfService","ElevationOfPrivilege"]
+          }
+        }
+      }
+    },
+    "what_to_fix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["issue", "stride_category", "severity", "how_to_fix"],
+        "properties": {
+          "issue":           { "type": "string" },
+          "stride_category": {
+            "type": "string",
+            "enum": ["Spoofing","Tampering","Repudiation","InformationDisclosure","DenialOfService","ElevationOfPrivilege"]
+          },
+          "severity": { "type": "string", "enum": ["Alta", "Media", "Baja"] },
+          "how_to_fix": { "type": "string" }
+        }
+      }
+    },
+    "what_to_add": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["missing_control", "why_needed", "stride_category", "implementation_hint"],
+        "properties": {
+          "missing_control":     { "type": "string" },
+          "why_needed":          { "type": "string" },
+          "stride_category":     {
+            "type": "string",
+            "enum": ["Spoofing","Tampering","Repudiation","InformationDisclosure","DenialOfService","ElevationOfPrivilege"]
+          },
+          "implementation_hint": { "type": "string" }
+        }
+      }
+    },
+    "overall_security_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Aggregate security score: Auth(20) + TLS(15) + RateLimit(15) + InputValidation(15) + Logging(15) + LeastPrivilege(10) + SecretsManagement(10)"
+    }
+  }
+}

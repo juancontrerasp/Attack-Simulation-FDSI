@@ -1,0 +1,177 @@
+{
+  "timestamp": "2026-04-25T05:30:21.450Z",
+  "executive_summary": {
+    "total_detected": 8,
+    "total_confirmed": 0,
+    "total_unconfirmed": 0,
+    "confirmation_rate_percent": 0,
+    "system_status": "unavailable_or_skipped"
+  },
+  "stride_analysis": {
+    "Spoofing": [
+      {
+        "category": "Spoofing",
+        "component": "JwtTokenAttack",
+        "description": "JWT token validation vulnerability. Tampered token accepted. Signature not properly verified.",
+        "evidence": "Tampered token accepted during authentication.",
+        "severity": "Alta",
+        "mitigation": "Ensure proper validation of JWT signatures and claims."
+      },
+      {
+        "category": "Spoofing",
+        "component": "CorsAttack",
+        "description": "CORS misconfiguration allows requests from any origin.",
+        "evidence": "Response contains 'Access-Control-Allow-Origin: *'.",
+        "severity": "Alta",
+        "mitigation": "Restrict CORS to trusted origins only."
+      }
+    ],
+    "Tampering": [
+      {
+        "category": "Tampering",
+        "component": "SqlInjectionAttack",
+        "description": "SQL injection vulnerability detected in login endpoint.",
+        "evidence": "Successful authentication with SQL injection payload.",
+        "severity": "Alta",
+        "mitigation": "Use parameterized queries to prevent SQL injection."
+      },
+      {
+        "category": "Tampering",
+        "component": "XssAttack",
+        "description": "XSS vulnerability detected. Payload reflected in response without proper encoding.",
+        "evidence": "Payload '<script>alert(\"XSS\")</script>' executed in response.",
+        "severity": "Alta",
+        "mitigation": "Implement proper input sanitization and output encoding."
+      }
+    ],
+    "InformationDisclosure": [
+      {
+        "category": "InformationDisclosure",
+        "component": "InfoLeakAttack",
+        "description": "Information leakage detected. Different responses allow user enumeration.",
+        "evidence": "Responses for valid and invalid usernames differ.",
+        "severity": "Media",
+        "mitigation": "Unify error messages for authentication failures."
+      },
+      {
+        "category": "InformationDisclosure",
+        "component": "PathTraversalAttack",
+        "description": "Path traversal vulnerability detected. System files accessible.",
+        "evidence": "Access to '/etc/passwd' via path traversal payload.",
+        "severity": "Alta",
+        "mitigation": "Implement strict input validation and sanitization for file paths."
+      }
+    ],
+    "DenialOfService": [
+      {
+        "category": "DenialOfService",
+        "component": "BruteForceAttack",
+        "description": "Absence of rate limiting allows brute force attacks.",
+        "evidence": "Multiple login attempts without blocking detected.",
+        "severity": "Alta",
+        "mitigation": "Implement rate limiting on login endpoints."
+      }
+    ],
+    "ElevationOfPrivilege": [
+      {
+        "category": "ElevationOfPrivilege",
+        "component": "WeakPasswordAttack",
+        "description": "Weak password policy allows easy account compromise.",
+        "evidence": "Weak passwords accepted during registration.",
+        "severity": "Alta",
+        "mitigation": "Enforce strong password policies with complexity requirements."
+      }
+    ]
+  },
+  "dynamic_validation": [],
+  "combined_threats": [
+    {
+      "category": "Spoofing",
+      "component": "JwtTokenAttack",
+      "description": "JWT token validation vulnerability. Tampered token accepted. Signature not properly verified.",
+      "evidence": "Tampered token accepted during authentication.",
+      "severity": "Alta",
+      "mitigation": "Ensure proper validation of JWT signatures and claims.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    },
+    {
+      "category": "Spoofing",
+      "component": "CorsAttack",
+      "description": "CORS misconfiguration allows requests from any origin.",
+      "evidence": "Response contains 'Access-Control-Allow-Origin: *'.",
+      "severity": "Alta",
+      "mitigation": "Restrict CORS to trusted origins only.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    },
+    {
+      "category": "Tampering",
+      "component": "SqlInjectionAttack",
+      "description": "SQL injection vulnerability detected in login endpoint.",
+      "evidence": "Successful authentication with SQL injection payload.",
+      "severity": "Alta",
+      "mitigation": "Use parameterized queries to prevent SQL injection.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    },
+    {
+      "category": "Tampering",
+      "component": "XssAttack",
+      "description": "XSS vulnerability detected. Payload reflected in response without proper encoding.",
+      "evidence": "Payload '<script>alert(\"XSS\")</script>' executed in response.",
+      "severity": "Alta",
+      "mitigation": "Implement proper input sanitization and output encoding.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    },
+    {
+      "category": "InformationDisclosure",
+      "component": "InfoLeakAttack",
+      "description": "Information leakage detected. Different responses allow user enumeration.",
+      "evidence": "Responses for valid and invalid usernames differ.",
+      "severity": "Media",
+      "mitigation": "Unify error messages for authentication failures.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    },
+    {
+      "category": "InformationDisclosure",
+      "component": "PathTraversalAttack",
+      "description": "Path traversal vulnerability detected. System files accessible.",
+      "evidence": "Access to '/etc/passwd' via path traversal payload.",
+      "severity": "Alta",
+      "mitigation": "Implement strict input validation and sanitization for file paths.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    },
+    {
+      "category": "DenialOfService",
+      "component": "BruteForceAttack",
+      "description": "Absence of rate limiting allows brute force attacks.",
+      "evidence": "Multiple login attempts without blocking detected.",
+      "severity": "Alta",
+      "mitigation": "Implement rate limiting on login endpoints.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    },
+    {
+      "category": "ElevationOfPrivilege",
+      "component": "WeakPasswordAttack",
+      "description": "Weak password policy allows easy account compromise.",
+      "evidence": "Weak passwords accepted during registration.",
+      "severity": "Alta",
+      "mitigation": "Enforce strong password policies with complexity requirements.",
+      "confirmed": null,
+      "confirmation_reason": "system_unavailable_or_skipped",
+      "dynamic_validation": null
+    }
+  ]
+}

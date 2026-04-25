@@ -1,11 +1,18 @@
 package attacks;
 
+import config.AttackConfig;
 import model.AttackResult;
+import model.StrideCategory;
 import util.HttpUtil;
 
 public class XssAttack {
 
-    public static AttackResult run(String baseUrl) {
+    public static AttackResult run(AttackConfig config) {
+
+        String loginEndpoint    = config.loginEndpoint;
+        String registerEndpoint = config.registerEndpoint;
+        String loginUrl    = config.targetUrl + loginEndpoint;
+        String registerUrl = config.targetUrl + registerEndpoint;
 
         String[] xssPayloads = {
             "<script>alert('XSS')</script>",
@@ -18,7 +25,6 @@ public class XssAttack {
         };
 
         for (String xss : xssPayloads) {
-            // Test in username field
             String payload = String.format("""
             {
               "username": "%s",
@@ -26,21 +32,22 @@ public class XssAttack {
             }
             """, xss.replace("\"", "\\\""));
 
-            String response = HttpUtil.post(baseUrl + "/login", payload);
+            String response = HttpUtil.post(loginUrl, payload);
 
-            // Check if XSS payload is reflected without encoding
-            if (response.contains(xss) || 
+            if (response.contains(xss) ||
                 (response.contains("<script>") && !response.contains("&lt;script&gt;")) ||
                 (response.contains("<img") && !response.contains("&lt;img"))) {
-                
-                String details = String.format("XSS vulnerability detected. Payload '%s' reflected in response without proper encoding", 
+
+                String details = String.format(
+                    "XSS vulnerability detected. Payload '%s' reflected in response without proper encoding",
                     truncate(xss, 50));
-                    
-                return new AttackResult("Cross-Site Scripting (XSS)", true, details);
+
+                return new AttackResult("Cross-Site Scripting (XSS)", true, details,
+                    StrideCategory.TAMPERING, "XssAttack", loginEndpoint);
             }
         }
 
-        // Test registration endpoint if available
+        // Test registration endpoint
         String regPayload = String.format("""
         {
           "username": "%s",
@@ -49,19 +56,21 @@ public class XssAttack {
         }
         """, xssPayloads[0].replace("\"", "\\\""));
 
-        String regResponse = HttpUtil.post(baseUrl + "/register", regPayload);
-        
+        String regResponse = HttpUtil.post(registerUrl, regPayload);
+
         if (regResponse.contains(xssPayloads[0]) && !regResponse.contains("&lt;")) {
-            return new AttackResult("Cross-Site Scripting (XSS)", true, 
-                "XSS vulnerability in registration endpoint. User input not sanitized");
+            return new AttackResult("Cross-Site Scripting (XSS)", true,
+                "XSS vulnerability in registration endpoint. User input not sanitized",
+                StrideCategory.TAMPERING, "XssAttack", registerEndpoint);
         }
 
-        return new AttackResult("Cross-Site Scripting (XSS)", false, 
-            "No XSS vulnerability detected. Tested " + xssPayloads.length + " payloads. Input appears to be properly encoded");
+        return new AttackResult("Cross-Site Scripting (XSS)", false,
+            "No XSS vulnerability detected. Tested " + xssPayloads.length
+            + " payloads. Input appears to be properly encoded",
+            StrideCategory.TAMPERING, "XssAttack", loginEndpoint);
     }
 
     private static String truncate(String str, int maxLength) {
-        if (str.length() <= maxLength) return str;
-        return str.substring(0, maxLength) + "...";
+        return str.length() <= maxLength ? str : str.substring(0, maxLength) + "...";
     }
 }

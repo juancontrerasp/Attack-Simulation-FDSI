@@ -1,0 +1,46 @@
+name: STRIDE Security Analysis
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  stride-analysis:
+    name: STRIDE Threat Analysis & Baseline Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: stride-agent/package-lock.json
+
+      - name: Install STRIDE agent dependencies
+        run: npm ci --prefix stride-agent
+
+      - name: Run STRIDE analysis
+        timeout-minutes: 2
+        env:
+          DEV_MODE: "true"
+          AI_PROVIDER: "mock"
+        run: |
+          node stride-agent/index.js --repo . --output threats-output.json --no-cache
+
+      - name: Check threats against baseline
+        id: baseline_check
+        run: node check-baseline.js
+
+      - name: Upload threats artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: threats-output
+          path: threats-output.json
+          retention-days: 30

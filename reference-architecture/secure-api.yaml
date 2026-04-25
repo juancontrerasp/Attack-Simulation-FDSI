@@ -1,0 +1,299 @@
+openapi: 3.0.3
+info:
+  title: Secure Reference API
+  version: 1.0.0
+  description: |
+    Secure REST API implementing controls against all 10 OWASP API Security vulnerabilities
+    tested by the attack engine. Designed as a quantitative contrast to the insecure system.
+
+    Security controls implemented:
+    - JWT RS256 authentication with signature enforcement (no "none" algorithm)
+    - Rate limiting: 5 requests/minute per IP on /login (Bucket4j)
+    - Parameterized SQL queries (PreparedStatement — no string concatenation)
+    - Security headers: HSTS, CSP, X-Frame-Options, X-Content-Type-Options
+    - Restrictive CORS: allowlist-only, no wildcard origin
+    - Strong password policy: min 8 chars, uppercase, digit, special character
+    - Generic error messages: no user enumeration, no internal state disclosure
+    - Session management: stateless JWT, no JSESSIONID, no fixation vector
+
+servers:
+  - url: https://api.secureapp.example.com
+    description: Production (TLS 1.3 enforced)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        RS256-signed JWT. Controls enforced:
+        - Algorithm "none" rejected unconditionally
+        - Signature verified on every request via JJWT library
+        - Expiry (exp claim) validated; expired tokens rejected with 401
+        - Tampered payload invalidates signature and is rejected
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          pattern: '^[a-zA-Z0-9_]{3,50}$'
+          minLength: 3
+          maxLength: 50
+          description: Alphanumeric username, 3–50 characters
+          example: alice_user
+        password:
+          type: string
+          minLength: 8
+          format: password
+          description: Minimum 8 characters
+      additionalProperties: false
+
+    RegisterRequest:
+      type: object
+      required: [username, email, password]
+      properties:
+        username:
+          type: string
+          pattern: '^[a-zA-Z0-9_]{3,50}$'
+          minLength: 3
+          maxLength: 50
+          example: alice_user
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: alice@example.com
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          format: password
+          pattern: '^(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$'
+          description: |
+            Strong password required:
+            - Minimum 8 characters
+            - At least one uppercase letter
+            - At least one digit
+            - At least one special character
+          example: "SecureP@ss1"
+      additionalProperties: false
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT access token (RS256 signed)
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+          description: Token lifetime in seconds
+          example: 3600
+
+    UserProfile:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+
+    ErrorResponse:
+      type: object
+      description: |
+        Generic error response. Does NOT reveal internal state, stack traces,
+        database errors, or whether a specific username/email exists.
+      properties:
+        error:
+          type: string
+          description: Human-readable error message (non-technical)
+      example:
+        error: "Credenciales inválidas"
+
+  responses:
+    Unauthorized:
+      description: Authentication required or credentials invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Credenciales inválidas"
+    RateLimitExceeded:
+      description: Too many requests — rate limit exceeded
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          schema:
+            type: integer
+            example: 60
+        X-RateLimit-Limit:
+          description: Maximum requests per window
+          schema:
+            type: integer
+            example: 5
+        X-RateLimit-Remaining:
+          description: Remaining requests in current window
+          schema:
+            type: integer
+            example: 0
+        X-RateLimit-Reset:
+          description: Unix timestamp when window resets
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Too many login attempts. Please try again later."
+
+paths:
+  /login:
+    post:
+      summary: Authenticate user and obtain JWT
+      operationId: login
+      tags: [Authentication]
+      x-security-controls:
+        rate_limiting: "5 requests/minute per source IP (Bucket4j sliding window)"
+        brute_force_protection: "Account lockout after 10 consecutive failures"
+        user_enumeration: "Generic error for both wrong username and wrong password"
+        credential_storage: "BCrypt cost factor 12 — no plaintext or reversible hash"
+        jwt_algorithm: "HS256 (production: RS256 with rotating keys)"
+        timing_attack: "Constant-time comparison via BCrypt (Spring Security)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              username: alice_user
+              password: "SecureP@ss1"
+      responses:
+        '200':
+          description: Authentication successful
+          headers:
+            X-RateLimit-Limit:
+              description: Max requests allowed per window
+              schema:
+                type: integer
+                example: 5
+            X-RateLimit-Remaining:
+              description: Remaining requests in current window
+              schema:
+                type: integer
+                example: 4
+            X-RateLimit-Reset:
+              description: Unix timestamp when window resets
+              schema:
+                type: integer
+            X-Frame-Options:
+              schema:
+                type: string
+                example: "DENY"
+            X-Content-Type-Options:
+              schema:
+                type: string
+                example: "nosniff"
+            Strict-Transport-Security:
+              schema:
+                type: string
+                example: "max-age=31536000; includeSubDomains; preload"
+            Content-Security-Policy:
+              schema:
+                type: string
+                example: "default-src 'self'; object-src 'none'"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input — validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /register:
+    post:
+      summary: Register a new user account
+      operationId: register
+      tags: [Authentication]
+      x-security-controls:
+        password_policy: "Pattern enforced: uppercase + digit + special char + min 8 chars"
+        input_validation: "Strict pattern validation on username and email fields"
+        duplicate_check: "409 Conflict returned if username or email already registered"
+        password_storage: "BCrypt hash stored — raw password never persisted"
+        email_validation: "RFC 5322 format check via Jakarta Validation"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              username: alice_user
+              email: alice@example.com
+              password: "SecureP@ss1"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+                  username:
+                    type: string
+        '400':
+          description: Validation error (weak password, invalid format)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Username or email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/me:
+    get:
+      summary: Get the current authenticated user's profile
+      operationId: getCurrentUser
+      tags: [User]
+      security:
+        - BearerAuth: []
+      x-security-controls:
+        jwt_validation: "RS256 signature verified; 'none' algorithm rejected; expiry enforced"
+        authorization: "Bearer token mandatory — 401 if missing, expired, or tampered"
+        data_minimization: "Returns only username and email — no internal IDs or hashes"
+        no_idor: "Returns only the caller's own profile — no user ID parameter"
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              example:
+                username: alice_user
+                email: alice@example.com
+        '401':
+          $ref: '#/components/responses/Unauthorized'

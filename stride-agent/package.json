@@ -1,0 +1,24 @@
+{
+  "name": "stride-agent",
+  "version": "1.0.0",
+  "description": "Agente de analisis STRIDE automatico sobre codigo fuente",
+  "main": "index.js",
+  "scripts": {
+    "analyze": "node analyze.js",
+    "analyze:mock": "DEV_MODE=true node analyze.js",
+    "analyze:ollama": "DEV_MODE=false AI_PROVIDER=ollama node analyze.js",
+    "analyze:verbose": "node analyze.js --verbose",
+    "check-baseline": "node ../check-baseline.js",
+    "update-baseline": "node ../check-baseline.js --update",
+    "compare": "node compare.js",
+    "compare:mock": "DEV_MODE=true node compare.js",
+    "compare:ollama": "DEV_MODE=false AI_PROVIDER=ollama node compare.js",
+    "compare:assert": "node compare.js --assert-insecure-greater"
+  },
+  "dependencies": {
+    "openai": "^4.47.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

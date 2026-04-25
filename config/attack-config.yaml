@@ -1,0 +1,25 @@
+# Attack Engine Configuration
+# Default configuration targeting localhost:8080
+
+target_url: http://localhost:8080
+
+endpoints:
+  login: /login
+  register: /register
+  auth_me: /api/auth/me
+
+timeout_ms: 5000
+max_passwords: 100
+passwords_file: passwords.txt
+
+enabled_attacks:
+  - SqlInjection
+  - BruteForce
+  - SessionFixation
+  - JwtToken
+  - XSS
+  - PathTraversal
+  - InfoLeak
+  - InsecureHeaders
+  - CORS
+  - WeakPassword

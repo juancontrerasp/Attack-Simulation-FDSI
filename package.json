@@ -1,0 +1,10 @@
+{
+  "name": "attack-simulation-fdsi",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "check-baseline": "node check-baseline.js",
+    "update-baseline": "node check-baseline.js --update",
+    "stride:analyze": "node stride-agent/index.js --repo . --output threats-output.json --no-cache"
+  }
+}

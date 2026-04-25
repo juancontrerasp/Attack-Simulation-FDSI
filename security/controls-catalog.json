@@ -1,0 +1,279 @@
+{
+  "$schema": "https://fdsi.local/schemas/controls-catalog-schema.json",
+  "version": "1.0.0",
+  "generated_at": "2026-04-23",
+  "description": "Catalogo de controles de seguridad mapeados a categorias STRIDE con referencias OWASP, CWE y NIST",
+  "controls": [
+
+    {
+      "id": "CTRL-S-01",
+      "stride_category": "Spoofing",
+      "threat_pattern": "JwtAlgNone",
+      "control_name": "JWT Algorithm Pinning",
+      "control_standard": "OWASP A07:2021 - Identification and Authentication Failures",
+      "reference_id": "CWE-345",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// JJWT — pin algorithm and validate signature\nimport io.jsonwebtoken.Jwts;\nimport io.jsonwebtoken.security.Keys;\n\nSecretKey key = Keys.hmacShaKeyFor(secret.getBytes());\nJwts.parserBuilder()\n    .setSigningKey(key)\n    .setAllowedClockSkewSeconds(30)\n    .build()\n    .parseClaimsJws(token);  // throws if alg=none or wrong key",
+        "Node.js": "// jsonwebtoken — always pass algorithms option\nconst jwt = require('jsonwebtoken');\njwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] }, (err, payload) => {\n  if (err) return res.status(401).json({ error: 'Invalid token' });\n  req.user = payload;\n  next();\n});",
+        "Python": "# PyJWT — whitelist algorithms\nimport jwt\ntry:\n    payload = jwt.decode(\n        token,\n        settings.JWT_SECRET,\n        algorithms=['HS256']  # never pass algorithms=None\n    )\nexcept jwt.InvalidTokenError:\n    raise AuthenticationFailed('Invalid token')"
+      }
+    },
+
+    {
+      "id": "CTRL-S-02",
+      "stride_category": "Spoofing",
+      "threat_pattern": "SessionFixation",
+      "control_name": "Session Regeneration on Authentication",
+      "control_standard": "OWASP A07:2021 - Identification and Authentication Failures",
+      "reference_id": "CWE-384",
+      "effort_estimate": "Low",
+      "implementation_hints": {
+        "Java": "// Spring Security — invalidate old session and create new one after login\n@Override\nprotected void successfulAuthentication(HttpServletRequest req, HttpServletResponse res,\n        FilterChain chain, Authentication auth) throws IOException, ServletException {\n    HttpSession oldSession = req.getSession(false);\n    if (oldSession != null) oldSession.invalidate();\n    HttpSession newSession = req.getSession(true);\n    // copy needed attributes, then store SecurityContext\n    SecurityContextHolder.getContext().setAuthentication(auth);\n}",
+        "Node.js": "// express-session — regenerate session on login\napp.post('/login', (req, res) => {\n  // ... validate credentials ...\n  req.session.regenerate((err) => {\n    if (err) return next(err);\n    req.session.userId = user.id;\n    res.redirect('/dashboard');\n  });\n});",
+        "Python": "# Django — cycle session key on login (built-in)\nfrom django.contrib.auth import login\n\ndef login_view(request):\n    user = authenticate(request, username=username, password=password)\n    if user:\n        login(request, user)  # Django calls request.session.cycle_key() internally\n        return redirect('dashboard')"
+      }
+    },
+
+    {
+      "id": "CTRL-S-03",
+      "stride_category": "Spoofing",
+      "threat_pattern": "WeakAuth",
+      "control_name": "Multi-Factor Authentication and Account Lockout",
+      "control_standard": "OWASP A07:2021 - Identification and Authentication Failures",
+      "reference_id": "CWE-287",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// Spring Security — account lockout via UserDetailsService\n@Service\npublic class LoginAttemptService {\n    private final Cache<String, Integer> attemptsCache = CacheBuilder.newBuilder()\n        .expireAfterWrite(1, TimeUnit.HOURS).build();\n\n    public void loginFailed(String key) {\n        int attempts = attemptsCache.getIfPresent(key) != null ? attemptsCache.getIfPresent(key) : 0;\n        attemptsCache.put(key, attempts + 1);\n    }\n\n    public boolean isBlocked(String key) {\n        Integer attempts = attemptsCache.getIfPresent(key);\n        return attempts != null && attempts >= 5;\n    }\n}",
+        "Node.js": "// express-rate-limit + custom lockout\nconst rateLimit = require('express-rate-limit');\nconst loginLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000,\n  max: 5,\n  message: { error: 'Too many login attempts, try again in 15 minutes' },\n  standardHeaders: true,\n  legacyHeaders: false\n});\napp.post('/login', loginLimiter, loginHandler);",
+        "Python": "# django-axes — account lockout after N failures\n# settings.py\nINSTALLED_APPS += ['axes']\nAUTHENTICATION_BACKENDS = ['axes.backends.AxesStandaloneBackend', 'django.contrib.auth.backends.ModelBackend']\nAXES_FAILURE_LIMIT = 5\nAXES_COOLOFF_TIME = 1  # hours"
+      }
+    },
+
+    {
+      "id": "CTRL-T-01",
+      "stride_category": "Tampering",
+      "threat_pattern": "SqlInjection",
+      "control_name": "Parameterized Queries / Prepared Statements",
+      "control_standard": "OWASP A03:2021 - Injection",
+      "reference_id": "CWE-89",
+      "effort_estimate": "High",
+      "implementation_hints": {
+        "Java": "// JDBC — always use PreparedStatement, never concatenate user input\nString sql = \"SELECT * FROM users WHERE username = ? AND password = ?\";\ntry (PreparedStatement stmt = connection.prepareStatement(sql)) {\n    stmt.setString(1, username);\n    stmt.setString(2, hashedPassword);\n    ResultSet rs = stmt.executeQuery();\n    return rs.next();\n}",
+        "Node.js": "// mysql2 — parameterized query with ? placeholders\nconst [rows] = await pool.execute(\n  'SELECT id, username FROM users WHERE username = ? AND password = ?',\n  [username, hashedPassword]\n);\n// pg (PostgreSQL) — use $1/$2 placeholders\nconst { rows } = await client.query(\n  'SELECT id FROM users WHERE username = $1',\n  [username]\n);",
+        "Python": "# Always pass parameters as second arg — never f-string or % format in SQL\ncursor.execute(\n    \"SELECT id, username FROM users WHERE username = %s AND password = %s\",\n    (username, hashed_password)\n)\n# Django ORM is safe by default\nUser.objects.filter(username=username, password=hashed_password).first()"
+      }
+    },
+
+    {
+      "id": "CTRL-T-02",
+      "stride_category": "Tampering",
+      "threat_pattern": "XSS",
+      "control_name": "Output Encoding and Content Security Policy",
+      "control_standard": "OWASP A03:2021 - Injection",
+      "reference_id": "CWE-79",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// Spring — HTML-escape user-controlled output\nimport org.springframework.web.util.HtmlUtils;\n\nString safe = HtmlUtils.htmlEscape(userInput);\n\n// Add CSP header in Spring Security\nhttp.headers(headers -> headers\n    .contentSecurityPolicy(csp -> csp\n        .policyDirectives(\"default-src 'self'; script-src 'self'\")));",
+        "Node.js": "// Express + helmet for CSP\nconst helmet = require('helmet');\napp.use(helmet.contentSecurityPolicy({\n  directives: {\n    defaultSrc: [\"'self'\"],\n    scriptSrc: [\"'self'\"],\n    styleSrc: [\"'self'\", \"'unsafe-inline'\"]\n  }\n}));\n// Sanitize HTML output\nconst createDOMPurify = require('dompurify');\nconst { JSDOM } = require('jsdom');\nconst DOMPurify = createDOMPurify(new JSDOM('').window);\nconst safe = DOMPurify.sanitize(userInput);",
+        "Python": "# Django auto-escapes template variables — use mark_safe only for trusted content\nfrom django.utils.html import escape\nsafe_output = escape(user_input)\n\n# Add CSP header via django-csp\n# settings.py\nMIDDLEWARE += ['csp.middleware.CSPMiddleware']\nCSP_DEFAULT_SRC = (\"'self'\",)\nCSP_SCRIPT_SRC = (\"'self'\",)"
+      }
+    },
+
+    {
+      "id": "CTRL-T-03",
+      "stride_category": "Tampering",
+      "threat_pattern": "PathTraversal",
+      "control_name": "Canonical Path Validation",
+      "control_standard": "OWASP A01:2021 - Broken Access Control",
+      "reference_id": "CWE-22",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// Resolve canonical path and assert it is within allowed base\nPath basePath = Paths.get(\"/app/files\").toAbsolutePath().normalize();\nPath requestedPath = basePath.resolve(userInput).normalize();\nif (!requestedPath.startsWith(basePath)) {\n    throw new SecurityException(\"Path traversal detected: \" + userInput);\n}\nreturn Files.readAllBytes(requestedPath);",
+        "Node.js": "const path = require('path');\nconst BASE_DIR = path.resolve('/app/files');\n\nfunction safeReadFile(userInput) {\n  const resolved = path.resolve(BASE_DIR, userInput);\n  if (!resolved.startsWith(BASE_DIR + path.sep) && resolved !== BASE_DIR) {\n    throw new Error('Path traversal attempt blocked');\n  }\n  return fs.readFileSync(resolved);\n}",
+        "Python": "import os\nBASE_DIR = os.path.abspath('/app/files')\n\ndef safe_open(user_input):\n    requested = os.path.abspath(os.path.join(BASE_DIR, user_input))\n    if not requested.startswith(BASE_DIR + os.sep):\n        raise PermissionError(f'Path traversal blocked: {user_input}')\n    return open(requested)"
+      }
+    },
+
+    {
+      "id": "CTRL-R-01",
+      "stride_category": "Repudiation",
+      "threat_pattern": "MissingAuditLog",
+      "control_name": "Structured Audit Logging with Actor Context",
+      "control_standard": "NIST SP 800-53 AU-2",
+      "reference_id": "CWE-778",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// SLF4J + MDC for structured audit logs\nimport org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;\nimport org.slf4j.MDC;\n\npublic class AuditService {\n    private static final Logger log = LoggerFactory.getLogger(\"AUDIT\");\n\n    public void record(String actor, String action, String resource) {\n        MDC.put(\"actor\", actor);\n        MDC.put(\"action\", action);\n        MDC.put(\"resource\", resource);\n        log.info(\"Audit event recorded\");\n        MDC.clear();\n    }\n}",
+        "Node.js": "// winston structured audit logger\nconst winston = require('winston');\nconst auditLogger = winston.createLogger({\n  level: 'info',\n  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),\n  transports: [new winston.transports.File({ filename: 'audit.log' })]\n});\n\nfunction auditLog(actor, action, resource) {\n  auditLogger.info({ actor, action, resource, timestamp: new Date().toISOString() });\n}",
+        "Python": "import logging, json\naudit_logger = logging.getLogger('audit')\nhandler = logging.FileHandler('audit.log')\nhandler.setFormatter(logging.Formatter('%(message)s'))\naudit_logger.addHandler(handler)\n\ndef audit_log(actor, action, resource):\n    audit_logger.info(json.dumps({'actor': actor, 'action': action, 'resource': resource, 'ts': str(datetime.utcnow())}))"
+      }
+    },
+
+    {
+      "id": "CTRL-R-02",
+      "stride_category": "Repudiation",
+      "threat_pattern": "TamperedLogs",
+      "control_name": "Log Injection Prevention",
+      "control_standard": "OWASP A09:2021 - Security Logging and Monitoring Failures",
+      "reference_id": "CWE-117",
+      "effort_estimate": "Low",
+      "implementation_hints": {
+        "Java": "// Sanitize user input before logging — strip newlines and control chars\nprivate static String sanitizeForLog(String input) {\n    if (input == null) return \"null\";\n    return input.replaceAll(\"[\\\\r\\\\n\\\\t]\", \"_\")\n                .replaceAll(\"[^\\\\x20-\\\\x7E]\", \"?\");\n}\nlog.info(\"User action: actor={}, resource={}\", sanitizeForLog(actor), sanitizeForLog(resource));",
+        "Node.js": "function sanitizeForLog(input) {\n  if (typeof input !== 'string') return String(input);\n  return input.replace(/[\\r\\n\\t]/g, '_').replace(/[^\\x20-\\x7E]/g, '?');\n}\nlogger.info({ actor: sanitizeForLog(actor), action: sanitizeForLog(action) });",
+        "Python": "import re\ndef sanitize_for_log(value):\n    if not isinstance(value, str):\n        value = str(value)\n    return re.sub(r'[\\r\\n\\t]', '_', re.sub(r'[^\\x20-\\x7E]', '?', value))\n\naudit_logger.info({'actor': sanitize_for_log(actor), 'action': sanitize_for_log(action)})"
+      }
+    },
+
+    {
+      "id": "CTRL-R-03",
+      "stride_category": "Repudiation",
+      "threat_pattern": "NoNonRepudiation",
+      "control_name": "Cryptographic Event Signing",
+      "control_standard": "NIST SP 800-53 AU-10",
+      "reference_id": "CWE-345",
+      "effort_estimate": "High",
+      "implementation_hints": {
+        "Java": "// Sign critical events with ECDSA private key\nimport java.security.*;\nimport java.util.Base64;\n\nprivate String signEvent(String payload, PrivateKey privateKey) throws Exception {\n    Signature sig = Signature.getInstance(\"SHA256withECDSA\");\n    sig.initSign(privateKey);\n    sig.update(payload.getBytes(StandardCharsets.UTF_8));\n    return Base64.getEncoder().encodeToString(sig.sign());\n}",
+        "Node.js": "const crypto = require('crypto');\n\nfunction signEvent(payload, privateKeyPem) {\n  const sign = crypto.createSign('SHA256');\n  sign.update(JSON.stringify(payload));\n  sign.end();\n  return sign.sign(privateKeyPem, 'base64');\n}",
+        "Python": "from cryptography.hazmat.primitives import hashes, serialization\nfrom cryptography.hazmat.primitives.asymmetric import ec\nimport json, base64\n\ndef sign_event(payload: dict, private_key) -> str:\n    data = json.dumps(payload, sort_keys=True).encode()\n    signature = private_key.sign(data, ec.ECDSA(hashes.SHA256()))\n    return base64.b64encode(signature).decode()"
+      }
+    },
+
+    {
+      "id": "CTRL-I-01",
+      "stride_category": "InformationDisclosure",
+      "threat_pattern": "MissingHeaders",
+      "control_name": "HTTP Security Headers Enforcement",
+      "control_standard": "OWASP A05:2021 - Security Misconfiguration",
+      "reference_id": "CWE-693",
+      "effort_estimate": "Low",
+      "implementation_hints": {
+        "Java": "// Spring Security — enable all recommended security headers\nhttp.headers(headers -> headers\n    .frameOptions(frame -> frame.deny())\n    .xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))\n    .contentTypeOptions(Customizer.withDefaults())\n    .httpStrictTransportSecurity(hsts -> hsts\n        .includeSubDomains(true)\n        .maxAgeInSeconds(31536000))\n    .contentSecurityPolicy(csp -> csp.policyDirectives(\"default-src 'self'\")));",
+        "Node.js": "// helmet — enable all security headers in one line\nconst helmet = require('helmet');\napp.use(helmet()); // sets X-Frame-Options, X-XSS-Protection, HSTS, CSP, etc.\n\n// Custom HSTS\napp.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true }));",
+        "Python": "# Django settings.py — enable security headers\nSECURE_BROWSER_XSS_FILTER = True\nSECURE_CONTENT_TYPE_NOSNIFF = True\nX_FRAME_OPTIONS = 'DENY'\nSECURE_HSTS_SECONDS = 31536000\nSECURE_HSTS_INCLUDE_SUBDOMAINS = True\n# Add django-csp for Content-Security-Policy\nCSP_DEFAULT_SRC = (\"'self'\",)"
+      }
+    },
+
+    {
+      "id": "CTRL-I-02",
+      "stride_category": "InformationDisclosure",
+      "threat_pattern": "ErrorLeakage",
+      "control_name": "Generic Error Responses",
+      "control_standard": "OWASP A05:2021 - Security Misconfiguration",
+      "reference_id": "CWE-209",
+      "effort_estimate": "Low",
+      "implementation_hints": {
+        "Java": "// Spring Boot — global exception handler returning generic messages\n@ControllerAdvice\npublic class GlobalExceptionHandler {\n    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);\n\n    @ExceptionHandler(Exception.class)\n    public ResponseEntity<Map<String, String>> handleAll(Exception ex, HttpServletRequest req) {\n        log.error(\"Unhandled exception at {}: {}\", req.getRequestURI(), ex.getMessage(), ex);\n        return ResponseEntity.status(500).body(Map.of(\"error\", \"Internal server error\"));\n    }\n}",
+        "Node.js": "// Express global error handler — never expose stack trace\napp.use((err, req, res, next) => {\n  console.error(err.stack);  // log internally\n  const status = err.status || 500;\n  res.status(status).json({\n    error: status < 500 ? err.message : 'Internal server error'\n  });\n});",
+        "Python": "# Django — DEBUG=False in production + custom 500 view\n# settings.py\nDEBUG = False\nALLOWED_HOSTS = ['yourdomain.com']\n\n# views.py\ndef handler500(request):\n    import logging\n    logging.getLogger('django.request').error('500 error', exc_info=True)\n    return JsonResponse({'error': 'Internal server error'}, status=500)"
+      }
+    },
+
+    {
+      "id": "CTRL-I-03",
+      "stride_category": "InformationDisclosure",
+      "threat_pattern": "SensitiveDataExposure",
+      "control_name": "Sensitive Field Filtering in API Responses",
+      "control_standard": "OWASP A02:2021 - Cryptographic Failures",
+      "reference_id": "CWE-312",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// Jackson — exclude sensitive fields from serialization\nimport com.fasterxml.jackson.annotation.JsonIgnore;\n\n@Entity\npublic class User {\n    private Long id;\n    private String username;\n\n    @JsonIgnore\n    private String password;\n\n    @JsonIgnore\n    private String securityQuestion;\n}",
+        "Node.js": "// Delete sensitive keys before sending response\nconst userFromDb = await User.findById(id).lean();\nconst { password, resetToken, __v, ...safeUser } = userFromDb;\nres.json(safeUser);\n\n// OR use a serializer helper\nconst serialize = ({ id, username, email }) => ({ id, username, email });",
+        "Python": "# Django REST Framework serializer — write_only for sensitive fields\nclass UserSerializer(serializers.ModelSerializer):\n    password = serializers.CharField(write_only=True)\n    class Meta:\n        model = User\n        fields = ['id', 'username', 'email', 'password']\n        # password will only be accepted on write, never returned"
+      }
+    },
+
+    {
+      "id": "CTRL-D-01",
+      "stride_category": "DenialOfService",
+      "threat_pattern": "BruteForce",
+      "control_name": "Rate Limiting on Authentication Endpoints",
+      "control_standard": "OWASP A07:2021 - Identification and Authentication Failures",
+      "reference_id": "CWE-307",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// Spring Boot + Bucket4j — token bucket rate limiter\n@Component\npublic class RateLimitFilter extends OncePerRequestFilter {\n    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();\n\n    @Override\n    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)\n            throws ServletException, IOException {\n        if (req.getRequestURI().equals(\"/api/login\")) {\n            String ip = req.getRemoteAddr();\n            Bucket bucket = buckets.computeIfAbsent(ip, k ->\n                Bucket.builder().addLimit(Bandwidth.simple(5, Duration.ofMinutes(15))).build());\n            if (!bucket.tryConsume(1)) {\n                res.setStatus(429);\n                res.getWriter().write(\"{\\\"error\\\":\\\"Too many requests\\\"}\");\n                return;\n            }\n        }\n        chain.doFilter(req, res);\n    }\n}",
+        "Node.js": "const rateLimit = require('express-rate-limit');\n\nconst loginLimiter = rateLimit({\n  windowMs: 15 * 60 * 1000,  // 15 minutes\n  max: 5,\n  standardHeaders: true,\n  legacyHeaders: false,\n  message: { error: 'Too many login attempts, please try again after 15 minutes' }\n});\napp.post('/api/login', loginLimiter, loginController);",
+        "Python": "# django-ratelimit\nfrom ratelimit.decorators import ratelimit\n\n@ratelimit(key='ip', rate='5/15m', method='POST', block=True)\ndef login_view(request):\n    # handle login"
+      }
+    },
+
+    {
+      "id": "CTRL-D-02",
+      "stride_category": "DenialOfService",
+      "threat_pattern": "ResourceExhaustion",
+      "control_name": "Request Size Limits and Timeouts",
+      "control_standard": "NIST SP 800-53 SC-5",
+      "reference_id": "CWE-400",
+      "effort_estimate": "Low",
+      "implementation_hints": {
+        "Java": "// Spring Boot — limit request body size in application.properties\n// spring.servlet.multipart.max-file-size=5MB\n// spring.servlet.multipart.max-request-size=10MB\n// server.tomcat.max-http-form-post-size=2MB\n// server.connection-timeout=30000\n\n// Or programmatically\n@Bean\npublic TomcatServletWebServerFactory servletContainer() {\n    TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();\n    factory.addConnectorCustomizers(connector -> {\n        connector.setMaxPostSize(2 * 1024 * 1024); // 2MB\n        connector.setAttribute(\"connectionTimeout\", 30000);\n    });\n    return factory;\n}",
+        "Node.js": "// Limit JSON body and URL-encoded payload sizes\napp.use(express.json({ limit: '1mb' }));\napp.use(express.urlencoded({ extended: true, limit: '1mb' }));\n\n// Set server timeout\nconst server = app.listen(3000);\nserver.timeout = 30000; // 30 seconds",
+        "Python": "# Django settings.py — limit upload and data sizes\nDATA_UPLOAD_MAX_MEMORY_SIZE = 2621440  # 2.5MB\nFILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB\nDATA_UPLOAD_MAX_NUMBER_FIELDS = 1000\n\n# Gunicorn timeout in gunicorn.conf.py\ntimeout = 30\nworkers = 4"
+      }
+    },
+
+    {
+      "id": "CTRL-D-03",
+      "stride_category": "DenialOfService",
+      "threat_pattern": "ConnectionExhaustion",
+      "control_name": "Connection Pool and Circuit Breaker Configuration",
+      "control_standard": "NIST SP 800-53 SC-5",
+      "reference_id": "CWE-770",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// HikariCP connection pool configuration in application.properties\n// spring.datasource.hikari.maximum-pool-size=20\n// spring.datasource.hikari.minimum-idle=5\n// spring.datasource.hikari.connection-timeout=30000\n// spring.datasource.hikari.idle-timeout=600000\n// spring.datasource.hikari.max-lifetime=1800000\n\n// Resilience4j circuit breaker\n@CircuitBreaker(name = \"database\", fallbackMethod = \"fallback\")\npublic List<User> getUsers() { return userRepository.findAll(); }",
+        "Node.js": "// mysql2 connection pool with limits\nconst pool = mysql.createPool({\n  host: process.env.DB_HOST,\n  user: process.env.DB_USER,\n  password: process.env.DB_PASS,\n  database: process.env.DB_NAME,\n  connectionLimit: 20,\n  acquireTimeout: 30000,\n  waitForConnections: true,\n  queueLimit: 0\n});",
+        "Python": "# SQLAlchemy engine with pool limits\nfrom sqlalchemy import create_engine\nengine = create_engine(\n    DATABASE_URL,\n    pool_size=20,\n    max_overflow=5,\n    pool_timeout=30,\n    pool_recycle=3600\n)\n\n# Django — use CONN_MAX_AGE\nDATABASES = {\n    'default': {\n        'CONN_MAX_AGE': 60,\n        'OPTIONS': {'pool_size': 20, 'max_overflow': 5}\n    }\n}"
+      }
+    },
+
+    {
+      "id": "CTRL-E-01",
+      "stride_category": "ElevationOfPrivilege",
+      "threat_pattern": "WeakPassword",
+      "control_name": "Password Complexity and Hashing Policy",
+      "control_standard": "OWASP A07:2021 - Identification and Authentication Failures",
+      "reference_id": "CWE-521",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// Spring Security + passay password policy\nimport org.passay.*;\n\nPasswordValidator validator = new PasswordValidator(\n    new LengthRule(12, 128),\n    new UppercaseCharacterRule(1),\n    new LowercaseCharacterRule(1),\n    new DigitCharacterRule(1),\n    new SpecialCharacterRule(1),\n    new WhitespaceRule()\n);\n\n// Hash with BCrypt (cost factor 12 recommended)\nPasswordEncoder encoder = new BCryptPasswordEncoder(12);\nString hashed = encoder.encode(rawPassword);",
+        "Node.js": "const bcrypt = require('bcrypt');\nconst SALT_ROUNDS = 12;\n\n// Validate complexity\nfunction validatePassword(password) {\n  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{12,}$/;\n  if (!regex.test(password)) throw new Error('Password does not meet complexity requirements');\n}\n\n// Hash\nasync function hashPassword(plain) {\n  validatePassword(plain);\n  return bcrypt.hash(plain, SALT_ROUNDS);\n}",
+        "Python": "# Django AUTH_PASSWORD_VALIDATORS in settings.py\nAUTH_PASSWORD_VALIDATORS = [\n    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 12}},\n    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},\n    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},\n    # Install django-password-validators for complexity\n    {'NAME': 'password_validators.password_character_requirements.password_validation.PasswordCharacterValidator',\n     'OPTIONS': {'min_length_digit': 1, 'min_length_upper': 1, 'min_length_special': 1}}\n]\n# Use Django's built-in bcrypt hasher\nPASSWORD_HASHERS = ['django.contrib.auth.hashers.BCryptSHA256PasswordHasher']"
+      }
+    },
+
+    {
+      "id": "CTRL-E-02",
+      "stride_category": "ElevationOfPrivilege",
+      "threat_pattern": "MissingAuthz",
+      "control_name": "Role-Based Access Control Enforcement",
+      "control_standard": "OWASP A01:2021 - Broken Access Control",
+      "reference_id": "CWE-285",
+      "effort_estimate": "Medium",
+      "implementation_hints": {
+        "Java": "// Spring Security — method-level authorization with @PreAuthorize\n@RestController\n@RequestMapping(\"/api/admin\")\npublic class AdminController {\n\n    @GetMapping(\"/users\")\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    public List<UserDto> getAllUsers() { return userService.findAll(); }\n\n    @DeleteMapping(\"/users/{id}\")\n    @PreAuthorize(\"hasRole('ADMIN') or #id == authentication.principal.id\")\n    public void deleteUser(@PathVariable Long id) { userService.delete(id); }\n}",
+        "Node.js": "// JWT middleware with role check\nfunction requireRole(role) {\n  return (req, res, next) => {\n    const token = req.headers.authorization?.split(' ')[1];\n    if (!token) return res.status(401).json({ error: 'No token' });\n    try {\n      const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });\n      if (payload.role !== role) return res.status(403).json({ error: 'Forbidden' });\n      req.user = payload;\n      next();\n    } catch { res.status(401).json({ error: 'Invalid token' }); }\n  };\n}\napp.delete('/api/admin/users/:id', requireRole('admin'), deleteUserHandler);",
+        "Python": "# Django — permission_required and LoginRequired mixins\nfrom django.contrib.auth.decorators import login_required, permission_required\n\n@login_required\n@permission_required('app.delete_user', raise_exception=True)\ndef delete_user(request, user_id):\n    User.objects.filter(id=user_id).delete()\n    return JsonResponse({'status': 'deleted'})\n\n# DRF permission classes\nclass AdminOnlyView(APIView):\n    permission_classes = [IsAdminUser]"
+      }
+    },
+
+    {
+      "id": "CTRL-E-03",
+      "stride_category": "ElevationOfPrivilege",
+      "threat_pattern": "PrivilegeEscalation",
+      "control_name": "Object-Level Ownership Verification (IDOR Prevention)",
+      "control_standard": "OWASP A01:2021 - Broken Access Control",
+      "reference_id": "CWE-269",
+      "effort_estimate": "High",
+      "implementation_hints": {
+        "Java": "// Verify resource ownership before access\n@GetMapping(\"/documents/{id}\")\n@PreAuthorize(\"isAuthenticated()\")\npublic DocumentDto getDocument(@PathVariable Long id,\n        @AuthenticationPrincipal UserDetails currentUser) {\n    Document doc = documentRepository.findById(id)\n        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));\n    if (!doc.getOwnerId().equals(((AppUser) currentUser).getId())) {\n        throw new ResponseStatusException(HttpStatus.FORBIDDEN, \"Access denied\");\n    }\n    return DocumentMapper.toDto(doc);\n}",
+        "Node.js": "// Always scope DB query by authenticated user ID\napp.get('/api/documents/:id', authenticate, async (req, res) => {\n  const doc = await Document.findOne({\n    _id: req.params.id,\n    userId: req.user.id  // ownership check inside the query\n  });\n  if (!doc) return res.status(404).json({ error: 'Not found' });\n  res.json(doc);\n});",
+        "Python": "# Django — always filter queryset by request.user\nclass DocumentDetailView(RetrieveDestroyAPIView):\n    serializer_class = DocumentSerializer\n    permission_classes = [IsAuthenticated]\n\n    def get_queryset(self):\n        # This prevents IDOR by scoping all lookups to the current user\n        return Document.objects.filter(owner=self.request.user)"
+      }
+    }
+
+  ]
+}

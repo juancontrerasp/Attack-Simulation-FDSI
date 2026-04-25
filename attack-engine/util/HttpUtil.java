@@ -4,15 +4,29 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class HttpUtil {
 
-    private static final HttpClient client = HttpClient.newHttpClient();
+    private static volatile HttpClient client = newClient(5000);
+    private static volatile int requestTimeoutMs = 10000;
+
+    public static void configure(int connectTimeoutMs, int reqTimeoutMs) {
+        requestTimeoutMs = reqTimeoutMs;
+        client = newClient(connectTimeoutMs);
+    }
+
+    private static HttpClient newClient(int connectTimeoutMs) {
+        return HttpClient.newBuilder()
+            .connectTimeout(Duration.ofMillis(connectTimeoutMs))
+            .build();
+    }
 
     public static String post(String url, String json) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
+                    .timeout(Duration.ofMillis(requestTimeoutMs))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
@@ -31,17 +45,16 @@ public class HttpUtil {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
+                    .timeout(Duration.ofMillis(requestTimeoutMs))
                     .GET()
                     .build();
 
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
-            // Include headers in response for security header checks
             StringBuilder fullResponse = new StringBuilder();
-            response.headers().map().forEach((k, v) -> {
-                fullResponse.append(k).append(": ").append(String.join(", ", v)).append("\n");
-            });
+            response.headers().map().forEach((k, v) ->
+                fullResponse.append(k).append(": ").append(String.join(", ", v)).append("\n"));
             fullResponse.append("\n").append(response.body());
 
             return fullResponse.toString();
@@ -55,6 +68,7 @@ public class HttpUtil {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
+                    .timeout(Duration.ofMillis(requestTimeoutMs))
                     .header("Authorization", "Bearer " + token)
                     .GET()
                     .build();
@@ -73,6 +87,7 @@ public class HttpUtil {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
+                    .timeout(Duration.ofMillis(requestTimeoutMs))
                     .header("Origin", origin)
                     .GET()
                     .build();
@@ -80,11 +95,9 @@ public class HttpUtil {
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
-            // Include response headers to check CORS headers
             StringBuilder fullResponse = new StringBuilder();
-            response.headers().map().forEach((k, v) -> {
-                fullResponse.append(k).append(": ").append(String.join(", ", v)).append("\n");
-            });
+            response.headers().map().forEach((k, v) ->
+                fullResponse.append(k).append(": ").append(String.join(", ", v)).append("\n"));
             fullResponse.append("\n").append(response.body());
 
             return fullResponse.toString();
