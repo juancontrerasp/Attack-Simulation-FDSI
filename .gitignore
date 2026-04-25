@@ -52,9 +52,16 @@ GITHUB_ACTIONS_INTEGRATION.md
 node_modules/
 stride-agent/node_modules/
 
+# Local assistant / editor metadata
+.claude/
+
 # Local environment and editor
 .env
 .vscode/
+
+# Java build outputs
+target/
+**/target/
 
 # Generated analysis outputs
 threats-output.json
