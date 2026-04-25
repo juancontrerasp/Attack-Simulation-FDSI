@@ -131,9 +131,9 @@
     "component": "InfoLeakAttack",
     "description": "Se detectó una fuga de información. Las respuestas diferentes permiten la enumeración de usuarios.",
     "severity": "Media",
-    "status": "mitigated",
+    "status": "reopened",
     "created_at": "2026-04-24T19:55:38.600Z",
-    "updated_at": "2026-04-24T20:05:57.121Z",
+    "updated_at": "2026-04-25T03:32:53.511Z",
     "history": [
       {
         "status": "open",
@@ -146,6 +146,12 @@
         "changed_by": "system",
         "changed_at": "2026-04-24T20:05:57.121Z",
         "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T03:32:53.511Z",
+        "reason": "Threat reappeared in new analysis"
       }
     ]
   },
@@ -545,15 +551,27 @@
     "component": "CorsAttack",
     "description": "La configuración de CORS permite solicitudes de cualquier origen.",
     "severity": "Alta",
-    "status": "open",
+    "status": "reopened",
     "created_at": "2026-04-25T02:55:21.233Z",
-    "updated_at": "2026-04-25T02:55:21.233Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T02:55:21.233Z",
         "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat reappeared in new analysis"
       }
     ]
   },
@@ -563,15 +581,27 @@
     "component": "SessionFixationAttack",
     "description": "Vulnerabilidad de fijación de sesión. El ID de sesión no se regenera después de la autenticación.",
     "severity": "Alta",
-    "status": "open",
+    "status": "reopened",
     "created_at": "2026-04-25T02:55:21.233Z",
-    "updated_at": "2026-04-25T02:55:21.233Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T02:55:21.233Z",
         "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat reappeared in new analysis"
       }
     ]
   },
@@ -581,15 +611,27 @@
     "component": "SqlInjectionAttack",
     "description": "Vulnerabilidad de inyección SQL detectada en el endpoint de inicio de sesión.",
     "severity": "Alta",
-    "status": "open",
+    "status": "reopened",
     "created_at": "2026-04-25T02:55:21.233Z",
-    "updated_at": "2026-04-25T02:55:21.233Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T02:55:21.233Z",
         "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T03:32:53.511Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat reappeared in new analysis"
       }
     ]
   },
@@ -599,15 +641,27 @@
     "component": "XssAttack",
     "description": "Vulnerabilidad XSS detectada. La carga útil se refleja en la respuesta sin la codificación adecuada.",
     "severity": "Alta",
-    "status": "open",
+    "status": "reopened",
     "created_at": "2026-04-25T02:55:21.233Z",
-    "updated_at": "2026-04-25T02:55:21.233Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T02:55:21.233Z",
         "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T03:32:53.511Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat reappeared in new analysis"
       }
     ]
   },
@@ -617,15 +671,21 @@
     "component": "InfoLeakAttack",
     "description": "Se detectó filtración de información. Las respuestas diferentes permiten la enumeración de usuarios.",
     "severity": "Media",
-    "status": "open",
+    "status": "mitigated",
     "created_at": "2026-04-25T02:55:21.233Z",
-    "updated_at": "2026-04-25T02:55:21.233Z",
+    "updated_at": "2026-04-25T03:32:53.511Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T02:55:21.233Z",
         "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T03:32:53.511Z",
+        "reason": "Threat not found in latest analysis"
       }
     ]
   },
@@ -659,15 +719,21 @@
     "component": "InsecureHeadersAttack",
     "description": "Faltan cabeceras de seguridad HTTP, exponiendo la superficie de ataque.",
     "severity": "Media",
-    "status": "open",
+    "status": "mitigated",
     "created_at": "2026-04-25T02:55:21.233Z",
-    "updated_at": "2026-04-25T02:55:21.233Z",
+    "updated_at": "2026-04-25T05:22:12.670Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T02:55:21.233Z",
         "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
       }
     ]
   },
@@ -677,15 +743,27 @@
     "component": "BruteForceAttack",
     "description": "La ausencia de limitación de tasa permite ataques de fuerza bruta.",
     "severity": "Alta",
-    "status": "open",
+    "status": "reopened",
     "created_at": "2026-04-25T02:55:21.233Z",
-    "updated_at": "2026-04-25T02:55:21.233Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T02:55:21.233Z",
         "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat reappeared in new analysis"
       }
     ]
   },
@@ -719,14 +797,368 @@
     "component": "PathTraversalAttack",
     "description": "Se detectó una vulnerabilidad de recorrido de directorios. Se accede a archivos del sistema.",
     "severity": "Media",
-    "status": "open",
+    "status": "mitigated",
     "created_at": "2026-04-25T03:05:13.009Z",
-    "updated_at": "2026-04-25T03:05:13.009Z",
+    "updated_at": "2026-04-25T05:22:12.670Z",
     "history": [
       {
         "status": "open",
         "changed_by": "system",
         "changed_at": "2026-04-25T03:05:13.009Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "452d7aaef4d0de2049b5e21ca0d5d0ad",
+    "category": "Tampering",
+    "component": "SqlInjectionAttack",
+    "description": "Se detectó una vulnerabilidad de inyección SQL en el endpoint de inicio de sesión.",
+    "severity": "Alta",
+    "status": "reopened",
+    "created_at": "2026-04-25T03:32:53.511Z",
+    "updated_at": "2026-04-25T05:29:58.646Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T03:32:53.511Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:29:58.646Z",
+        "reason": "Threat reappeared in new analysis"
+      }
+    ]
+  },
+  {
+    "id": "00a4b5c82f50b16ee0a99b69ca71677d",
+    "category": "Tampering",
+    "component": "XssAttack",
+    "description": "Se detectó una vulnerabilidad XSS. La carga útil se refleja en la respuesta sin la codificación adecuada.",
+    "severity": "Alta",
+    "status": "reopened",
+    "created_at": "2026-04-25T03:32:53.511Z",
+    "updated_at": "2026-04-25T05:29:58.646Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T03:32:53.511Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:29:58.646Z",
+        "reason": "Threat reappeared in new analysis"
+      }
+    ]
+  },
+  {
+    "id": "7e6759a87f7da05e85e84aab3de83e9a",
+    "category": "ElevationOfPrivilege",
+    "component": "WeakPasswordAttack",
+    "description": "La política de contraseñas débiles permite la fácil compromisión de cuentas.",
+    "severity": "Alta",
+    "status": "reopened",
+    "created_at": "2026-04-25T03:32:53.511Z",
+    "updated_at": "2026-04-25T05:29:58.646Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T03:32:53.511Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Threat not found in latest analysis"
+      },
+      {
+        "status": "reopened",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:29:58.646Z",
+        "reason": "Threat reappeared in new analysis"
+      }
+    ]
+  },
+  {
+    "id": "50038376cb6cd0521dc96de257160994",
+    "category": "Spoofing",
+    "component": "JwtTokenAttack",
+    "description": "Riesgo de suplantación si el backend acepta tokens manipulados o 'alg=none'.",
+    "severity": "Alta",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "d7ea631bd654750e1b7db38d0e43531f",
+    "category": "Spoofing",
+    "component": "SessionFixationAttack",
+    "description": "Vulnerabilidad de fijación de sesión detectada. ID de sesión no regenerado tras la autenticación.",
+    "severity": "Alta",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "a052a0f2efc976cffb340c0a9d5befc5",
+    "category": "Tampering",
+    "component": "SqlInjectionAttack",
+    "description": "Posible manipulación de autenticación a través de inyección SQL en login.",
+    "severity": "Alta",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "cd69796a7922674fe91940feb8f7dd67",
+    "category": "Tampering",
+    "component": "XssAttack",
+    "description": "Vulnerabilidad XSS detectada. Payload reflejado en respuesta sin codificación adecuada.",
+    "severity": "Alta",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "d8c53e732a7116ecab597aa5bea43f73",
+    "category": "InformationDisclosure",
+    "component": "InfoLeakAttack",
+    "description": "Se detectó fuga de información. Respuestas diferentes permiten enumeración de usuarios.",
+    "severity": "Media",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "12f3cb651639514309261770433e9996",
+    "category": "InformationDisclosure",
+    "component": "InsecureHeadersAttack",
+    "description": "Faltan cabeceras de seguridad que aumentan el riesgo de clickjacking, XSS y otros ataques.",
+    "severity": "Media",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "6be4b6616faade8467258e4c72284171",
+    "category": "DenialOfService",
+    "component": "BruteForceAttack",
+    "description": "La ausencia de limitación de tasa puede permitir abusos sostenidos.",
+    "severity": "Alta",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "650b7b5500c5bc6cce7eb11072babd50",
+    "category": "ElevationOfPrivilege",
+    "component": "WeakPasswordAttack",
+    "description": "Política de contraseñas débiles facilita el compromiso de cuentas.",
+    "severity": "Alta",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:22:12.670Z",
+    "updated_at": "2026-04-25T05:26:21.663Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:22:12.670Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "852fcd30e9231eb48257af324995eadc",
+    "category": "InformationDisclosure",
+    "component": "InsecureHeadersAttack",
+    "description": "Faltan cabeceras de seguridad que aumentan el riesgo de ataques.",
+    "severity": "Media",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:26:21.663Z",
+    "updated_at": "2026-04-25T05:29:58.646Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:29:58.646Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "7389b2261e98d0fc75be5f306047e8a6",
+    "category": "ElevationOfPrivilege",
+    "component": "WeakPasswordAttack",
+    "description": "Política de contraseñas débiles que permite la fácil compromisión de cuentas.",
+    "severity": "Alta",
+    "status": "mitigated",
+    "created_at": "2026-04-25T05:26:21.663Z",
+    "updated_at": "2026-04-25T05:29:58.646Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:26:21.663Z",
+        "reason": "Detected in analysis"
+      },
+      {
+        "status": "mitigated",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:29:58.646Z",
+        "reason": "Threat not found in latest analysis"
+      }
+    ]
+  },
+  {
+    "id": "7f575381d0efc5bf82eb64d62f344e9a",
+    "category": "InformationDisclosure",
+    "component": "InsecureHeadersAttack",
+    "description": "Faltan cabeceras de seguridad, lo que aumenta el riesgo de ataques.",
+    "severity": "Media",
+    "status": "open",
+    "created_at": "2026-04-25T05:29:58.646Z",
+    "updated_at": "2026-04-25T05:29:58.646Z",
+    "history": [
+      {
+        "status": "open",
+        "changed_by": "system",
+        "changed_at": "2026-04-25T05:29:58.646Z",
         "reason": "Detected in analysis"
       }
     ]

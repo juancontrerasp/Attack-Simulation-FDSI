@@ -335,26 +335,33 @@ If you are presenting on Windows, use this order:
    ```powershell
    npm run stride:analyze
    ```
+   Open `threats-output.json`.
 3. Show a live attack simulation:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File .\launch_attack.ps1 -Attacks SqlInjection -Target http://localhost:8080
    ```
+   Open `results.json` and `dashboard-standalone.html`.
 4. Merge results:
    ```powershell
    node scripts/combine-results.js
    ```
+   Open `combined-report.json`.
 5. Show comparison metrics:
    ```powershell
    node compare.js
    ```
+   Open `metrics-report.html`, `metrics-report.json`, and `docs/results-table.tex`.
 6. Show the end-to-end pipeline:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File .\run-full-analysis.ps1 -SkipDynamic -SkipRecommendations -SkipBaseline
    ```
+   Open `security/threat-registry.json` and `security/trend-report.json`.
 7. Optionally show the security gate failure:
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File .\run-full-analysis.ps1 -SkipDynamic -SkipRecommendations
    ```
+
+If you want URL-based viewing, start the local server with `python serve_dashboard.py` and open `http://localhost:8000/dashboard.html`.
 
 ### What to show on screen
 

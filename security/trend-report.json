@@ -262,5 +262,185 @@
         "reopened": 0
       }
     }
+  },
+  {
+    "date": "2026-04-25T03:32:53.518Z",
+    "total_open": 8,
+    "total_mitigated": 24,
+    "total_accepted": 0,
+    "total_reopened": 3,
+    "by_category": {
+      "Spoofing": {
+        "open": 2,
+        "mitigated": 4,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "Tampering": {
+        "open": 2,
+        "mitigated": 6,
+        "accepted": 0,
+        "reopened": 0
+      },
+      "InformationDisclosure": {
+        "open": 2,
+        "mitigated": 6,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "DenialOfService": {
+        "open": 1,
+        "mitigated": 3,
+        "accepted": 0,
+        "reopened": 0
+      },
+      "ElevationOfPrivilege": {
+        "open": 1,
+        "mitigated": 3,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "Repudiation": {
+        "open": 0,
+        "mitigated": 2,
+        "accepted": 0,
+        "reopened": 0
+      }
+    }
+  },
+  {
+    "date": "2026-04-25T05:22:12.686Z",
+    "total_open": 8,
+    "total_mitigated": 32,
+    "total_accepted": 0,
+    "total_reopened": 3,
+    "by_category": {
+      "Spoofing": {
+        "open": 2,
+        "mitigated": 6,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "Tampering": {
+        "open": 2,
+        "mitigated": 8,
+        "accepted": 0,
+        "reopened": 0
+      },
+      "InformationDisclosure": {
+        "open": 2,
+        "mitigated": 8,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "DenialOfService": {
+        "open": 1,
+        "mitigated": 4,
+        "accepted": 0,
+        "reopened": 0
+      },
+      "ElevationOfPrivilege": {
+        "open": 1,
+        "mitigated": 4,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "Repudiation": {
+        "open": 0,
+        "mitigated": 2,
+        "accepted": 0,
+        "reopened": 0
+      }
+    }
+  },
+  {
+    "date": "2026-04-25T05:26:21.672Z",
+    "total_open": 2,
+    "total_mitigated": 35,
+    "total_accepted": 0,
+    "total_reopened": 8,
+    "by_category": {
+      "Spoofing": {
+        "open": 0,
+        "mitigated": 6,
+        "accepted": 0,
+        "reopened": 3
+      },
+      "Tampering": {
+        "open": 0,
+        "mitigated": 8,
+        "accepted": 0,
+        "reopened": 2
+      },
+      "InformationDisclosure": {
+        "open": 1,
+        "mitigated": 10,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "DenialOfService": {
+        "open": 0,
+        "mitigated": 4,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "ElevationOfPrivilege": {
+        "open": 1,
+        "mitigated": 5,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "Repudiation": {
+        "open": 0,
+        "mitigated": 2,
+        "accepted": 0,
+        "reopened": 0
+      }
+    }
+  },
+  {
+    "date": "2026-04-25T05:29:58.654Z",
+    "total_open": 1,
+    "total_mitigated": 34,
+    "total_accepted": 0,
+    "total_reopened": 11,
+    "by_category": {
+      "Spoofing": {
+        "open": 0,
+        "mitigated": 6,
+        "accepted": 0,
+        "reopened": 3
+      },
+      "Tampering": {
+        "open": 0,
+        "mitigated": 6,
+        "accepted": 0,
+        "reopened": 4
+      },
+      "InformationDisclosure": {
+        "open": 1,
+        "mitigated": 11,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "DenialOfService": {
+        "open": 0,
+        "mitigated": 4,
+        "accepted": 0,
+        "reopened": 1
+      },
+      "ElevationOfPrivilege": {
+        "open": 0,
+        "mitigated": 5,
+        "accepted": 0,
+        "reopened": 2
+      },
+      "Repudiation": {
+        "open": 0,
+        "mitigated": 2,
+        "accepted": 0,
+        "reopened": 0
+      }
+    }
   }
 ]

@@ -1,12 +1,14 @@
 # Demo 5 Minutos (Windows / PowerShell)
 
 ## Objetivo
-Mostrar, en 5 minutos, las capacidades principales del repo:
+Mostrar, en 5 minutos, las capacidades principales del repo y dejar claro qué abrir en pantalla después de cada paso:
 - Analisis estatico STRIDE por IA.
 - Simulacion de ataques dinamicos con Java.
 - Consolidacion y metricas para reporte.
 - Gate de seguridad por baseline (incluyendo caso de falla).
 - Pipeline Windows nativo con scripts `.ps1`.
+- Dashboard HTML, reportes JSON y salida para paper.
+- Vista de servidor local cuando quieras usar URL en vez de abrir archivos directos.
 
 ## Pre-demo (1-2 min antes)
 Ejecuta el preflight para validar comandos:
@@ -24,7 +26,20 @@ Artefacto generado:
 Explica que el proyecto combina:
 - Motor de ataques Java (`attack-engine`).
 - Agente STRIDE IA (`stride-agent`).
-- Reportes para evidencia (`combined-report.json`, `metrics-report.html`).
+- Reportes para evidencia (`combined-report.json`, `metrics-report.html`, `dashboard-standalone.html`).
+- Baseline persistente y trend tracking (`security/threat-registry.json`, `security/trend-report.json`).
+
+Si quieres usar URL en lugar de abrir archivos, arranca el servidor del dashboard:
+
+```powershell
+python serve_dashboard.py
+```
+
+URL a mostrar en el navegador:
+- `http://localhost:8000/dashboard.html`
+
+Si prefieres cero dependencias, abre directo:
+- `dashboard-standalone.html`
 
 ### Min 0:30 - 1:30 | Analisis estatico IA
 ```powershell
@@ -42,6 +57,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launch_attack.ps1 -Attacks
 Muestra archivos:
 - `results.json`
 - `dashboard-standalone.html`
+- Si el servidor ya está activo, puedes abrir `http://localhost:8000/dashboard.html`.
 
 ### Min 2:30 - 3:20 | Consolidacion de hallazgos
 ```powershell
@@ -67,6 +83,12 @@ Demo estable (siempre util para presentacion):
 powershell -NoProfile -ExecutionPolicy Bypass -File .\run-full-analysis.ps1 -SkipDynamic -SkipRecommendations -SkipBaseline
 ```
 
+Muestra al final:
+- `combined-report.json`
+- `metrics-report.html`
+- `security/threat-registry.json`
+- `security/trend-report.json`
+
 Luego muestra el gate real (puede fallar si hay regresiones `reopened`):
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\run-full-analysis.ps1 -SkipDynamic -SkipRecommendations
@@ -88,10 +110,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\launch_attack.ps1 -Attacks
 ```
 (igual te genera `results.json` y dashboard en este entorno)
 
+Si quieres mostrar la versión servida por URL, abre:
+- `http://localhost:8000/dashboard.html`
+
+Si quieres mostrar la versión offline, abre:
+- `dashboard-standalone.html`
+
 ## Artefactos a enseñar al final
 - `threats-output.json`
 - `results.json`
 - `combined-report.json`
+- `dashboard.html` o `http://localhost:8000/dashboard.html`
 - `dashboard-standalone.html`
 - `metrics-report.html`
 - `security/threat-registry.json`
+- `security/trend-report.json`
+- `metrics-report.json`
+- `docs/results-table.tex`
