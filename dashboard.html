@@ -3,473 +3,882 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Security Dashboard – STRIDE Analysis</title>
+  <title>Unified Security Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     :root {
-      --bg: #0d0d1a;
-      --surface: #1a1a2e;
-      --border: #2d2d44;
-      --text: #e2e8f0;
-      --muted: #888;
-      --green: #4ade80;
-      --yellow: #facc15;
-      --red: #f87171;
-      --cyan: #22d3ee;
-      --accent: #818cf8;
+      --bg: #0f172a;
+      --surface: #111827;
+      --surface-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --line: #334155;
+      --ok: #22c55e;
+      --warn: #eab308;
+      --danger: #ef4444;
+      --blue: #3b82f6;
+      --blue-soft: #93c5fd;
+      --gray: #64748b;
     }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+      margin: 0;
+      background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 55%);
       color: var(--text);
-      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      min-width: 1024px;
+    }
+
+    .wrap {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 32px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(17, 24, 39, 0.92);
+      backdrop-filter: blur(4px);
       position: sticky;
-      top: 0;
-      z-index: 100;
+      top: 8px;
+      z-index: 20;
     }
-    .logo { font-size: 1.25rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
-    .logo span { font-size: 1.5rem; }
-    .header-meta { color: var(--muted); font-size: 0.82rem; }
-    #ciStatus {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 6px; padding: 8px 14px; font-size: 0.85rem;
+
+    .title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
     }
-    .ci-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .ci-dot.pass { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .ci-dot.fail { background: var(--red); box-shadow: 0 0 6px var(--red); }
-    .ci-dot.unknown { background: var(--muted); }
 
-    main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+    .subtitle {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
 
-    .cards {
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: #0b1220;
+      font-size: 0.82rem;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot.pass { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+    .dot.fail { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+    .dot.unknown { background: var(--gray); }
+
+    .panel {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(17, 24, 39, 0.92);
+      padding: 16px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--blue-soft);
+      letter-spacing: 0.8px;
+    }
+
+    .filters-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: 1.5fr 1fr 1fr;
       gap: 16px;
-      margin-bottom: 28px;
     }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+
+    .group-title {
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chips label {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      background: #0b1220;
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .stride-cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .stride-card {
+      border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-    }
-    .card .c-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-    .card .c-value { font-size: 2.2rem; font-weight: 700; line-height: 1; }
-    .c-value.green  { color: var(--green); }
-    .c-value.yellow { color: var(--yellow); }
-    .c-value.red    { color: var(--red); }
-    .c-value.cyan   { color: var(--cyan); }
-    .c-value.white  { color: #fff; }
-
-    section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 24px;
-      margin-bottom: 24px;
-    }
-    section h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+      padding: 12px;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
     }
 
-    .two-col { display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; }
-    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
-
-    .chart-wrap { max-width: 420px; margin: 0 auto; }
-
-    .filters {
-      display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px;
+    .stride-card:hover {
+      transform: translateY(-1px);
+      border-color: var(--blue);
     }
-    .filters input, .filters select {
-      background: var(--bg); border: 1px solid var(--border);
-      color: var(--text); border-radius: 6px; padding: 8px 12px; font-size: 0.88rem;
-      outline: none;
-    }
-    .filters input { flex: 1; min-width: 200px; }
-    .filters input:focus, .filters select:focus { border-color: var(--accent); }
-    .filters label { font-size: 0.82rem; color: var(--muted); }
 
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 600px; }
-    thead th {
-      text-align: left; padding: 10px 14px;
-      color: var(--muted); font-weight: 600;
-      border-bottom: 1px solid var(--border);
-      text-transform: uppercase; font-size: 0.74rem; letter-spacing: 0.5px;
-      cursor: pointer; user-select: none; white-space: nowrap;
+    .stride-card.high { border-color: var(--danger); }
+    .stride-card.mid { border-color: var(--warn); }
+    .stride-card.low { border-color: var(--ok); }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
     }
-    thead th:hover { color: var(--text); }
-    thead th .sort-icon { margin-left: 4px; opacity: 0.4; }
-    thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
-    tbody tr { border-bottom: 1px solid #1e1e30; transition: background 0.15s; }
-    tbody tr:hover { background: rgba(129,140,248,0.05); }
-    tbody td { padding: 12px 14px; vertical-align: top; }
-    .threat-desc { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
-    .no-results { text-align: center; padding: 40px; color: var(--muted); font-size: 0.9rem; }
+
+    .cat {
+      font-weight: 700;
+      font-size: 0.86rem;
+    }
+
+    .count {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    .sev-badges {
+      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
 
     .badge {
-      display: inline-block; padding: 3px 9px;
-      border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 3px 8px;
+      font-size: 0.74rem;
+      color: #dbeafe;
+      background: #0b1220;
     }
-    .badge-Alta    { background: rgba(248,113,113,.15); color: var(--red);    border: 1px solid var(--red); }
-    .badge-Media   { background: rgba(250,204, 21,.15); color: var(--yellow); border: 1px solid var(--yellow); }
-    .badge-Baja    { background: rgba( 74,222,128,.15); color: var(--green);  border: 1px solid var(--green); }
-    .badge-cat     { background: rgba(129,140,248,.1);  color: var(--accent); border: 1px solid var(--accent); }
-    .badge-confirm { background: rgba( 34,211,238,.1);  color: var(--cyan);   border: 1px solid var(--cyan); }
-    .badge-unconf  { background: rgba(136,136,136,.1);  color: var(--muted);  border: 1px solid var(--border); }
 
-    .stride-bars { display: flex; flex-direction: column; gap: 10px; }
-    .stride-label {
-      display: flex; justify-content: space-between;
-      font-size: 0.82rem; margin-bottom: 4px; color: var(--text);
+    .b-high { border-color: var(--danger); color: #fecaca; }
+    .b-mid { border-color: var(--warn); color: #fde68a; }
+    .b-low { border-color: var(--ok); color: #bbf7d0; }
+
+    .threat-list {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+      display: none;
+      font-size: 0.78rem;
+      color: #cbd5e1;
     }
-    .stride-label .cnt { color: var(--muted); }
-    .progress { background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
 
-    .ci-panel { display: flex; flex-direction: column; gap: 12px; }
-    .ci-item {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    .threat-list.open { display: block; }
+
+    .threat-item + .threat-item {
+      margin-top: 8px;
     }
-    .ci-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
-    .ci-info { flex: 1; }
-    .ci-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
-    .ci-detail { font-size: 0.82rem; color: var(--muted); }
-    .ci-badge { font-size: 0.78rem; padding: 2px 8px; border-radius: 3px; align-self: flex-start; }
-    .ci-badge.pass { background: rgba(74,222,128,.15); color: var(--green); border: 1px solid var(--green); }
-    .ci-badge.info { background: rgba(34,211,238,.1); color: var(--cyan); border: 1px solid var(--cyan); }
 
-    .error-box { text-align: center; padding: 60px 20px; color: var(--muted); }
-    .error-box .error-icon { font-size: 3rem; margin-bottom: 16px; }
-    .error-box p { font-size: 0.9rem; line-height: 1.6; }
-    .error-box code { background: var(--border); padding: 2px 6px; border-radius: 3px; font-size: 0.85rem; }
+    .threat-item .head {
+      font-weight: 600;
+    }
 
-    #loadingMsg { text-align: center; padding: 60px; color: var(--muted); }
+    .radar-box {
+      min-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dynamic-table-wrap {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+      font-size: 0.82rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #253041;
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+
+    .status-vuln { color: #fecaca; }
+    .status-safe { color: #bbf7d0; }
+    .status-na { color: #cbd5e1; }
+
+    .confirm-yes { color: #86efac; font-weight: 700; }
+    .confirm-no { color: #fca5a5; font-weight: 700; }
+    .confirm-na { color: #94a3b8; font-weight: 700; }
+
+    .details {
+      display: block;
+      margin-top: 4px;
+      color: #cbd5e1;
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+
+    .ci-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .ci-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface-2);
+      padding: 12px;
+    }
+
+    .ci-k {
+      color: var(--muted);
+      font-size: 0.76rem;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ci-v {
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    a.link {
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 0.84rem;
+    }
+
+    a.link:hover { text-decoration: underline; }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.84rem;
+      padding: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      background: #0b1220;
+    }
+
+    .loading {
+      margin-top: 16px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-
-<header>
-  <div class="logo"><span>🛡️</span> Security Dashboard</div>
-  <div class="header-meta" id="reportTimestamp">Loading…</div>
-  <div id="ciStatus">
-    <div class="ci-dot unknown" id="ciDot"></div>
-    <span id="ciStatusText">CI/CD Status</span>
-  </div>
-</header>
-
-<main>
-  <div id="loadingMsg">⏳ Loading combined-report.json…</div>
-  <div id="content" style="display:none">
-    <div class="cards" id="metricCards"></div>
-    <div class="two-col">
-      <section>
-        <h2>📡 STRIDE Radar</h2>
-        <div class="chart-wrap"><canvas id="radarChart"></canvas></div>
-      </section>
-      <section>
-        <h2>📊 STRIDE Coverage</h2>
-        <div class="stride-bars" id="strideBars"></div>
-      </section>
-    </div>
-    <section>
-      <h2>🔍 Threats</h2>
-      <div class="filters">
-        <input type="text" id="searchBox" placeholder="🔍 Search component, category, description…" oninput="applyFilters()">
-        <label>Severity:</label>
-        <select id="sevFilter" onchange="applyFilters()">
-          <option value="">All</option>
-          <option value="Alta">Alta</option>
-          <option value="Media">Media</option>
-          <option value="Baja">Baja</option>
-        </select>
-        <label>Category:</label>
-        <select id="catFilter" onchange="applyFilters()">
-          <option value="">All</option>
-        </select>
-        <label>Confirmed:</label>
-        <select id="confFilter" onchange="applyFilters()">
-          <option value="">All</option>
-          <option value="yes">Confirmed</option>
-          <option value="no">Not confirmed</option>
-        </select>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="title">Unified Security Dashboard: Static + Dynamic + CI/CD</div>
+        <div class="subtitle" id="reportTime">Loading report...</div>
       </div>
-      <div class="table-wrap">
-        <table id="threatsTable">
+      <div class="status-chip">
+        <span id="ciDot" class="dot unknown"></span>
+        <span id="ciStatusText">Pipeline status pending</span>
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>Global Filters</h2>
+      <div class="filters-grid">
+        <div>
+          <div class="group-title">STRIDE Category</div>
+          <div class="chips" id="categoryFilters"></div>
+        </div>
+        <div>
+          <div class="group-title">Severity</div>
+          <div class="chips" id="severityFilters"></div>
+        </div>
+        <div>
+          <div class="group-title">Confirmation</div>
+          <div class="chips" id="confirmationFilters"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>STRIDE Panel</h2>
+      <div class="layout">
+        <div>
+          <div class="stride-cards" id="strideCards"></div>
+        </div>
+        <div class="radar-box">
+          <canvas id="strideRadar" width="380" height="380"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Dynamic Validation Panel</h2>
+      <div class="dynamic-table-wrap">
+        <table>
           <thead>
             <tr>
-              <th onclick="sortBy('category')">Category <span class="sort-icon">↕</span></th>
-              <th onclick="sortBy('component')">Component <span class="sort-icon">↕</span></th>
-              <th onclick="sortBy('severity')">Severity <span class="sort-icon">↕</span></th>
-              <th>Description</th>
-              <th onclick="sortBy('confirmed')">Confirmed <span class="sort-icon">↕</span></th>
+              <th>Attack</th>
+              <th>STRIDE Category</th>
+              <th>Status</th>
+              <th>Confirmed</th>
+              <th>Detail</th>
             </tr>
           </thead>
-          <tbody id="threatsBody"></tbody>
+          <tbody id="dynamicTableBody"></tbody>
         </table>
       </div>
-      <div class="no-results" id="noResults" style="display:none">No threats match your filters.</div>
     </section>
-    <section>
-      <h2>⚙️ CI/CD Pipeline Status</h2>
-      <div class="ci-panel" id="ciPanel"></div>
+
+    <section class="panel">
+      <h2>CI/CD Panel</h2>
+      <div class="ci-grid" id="ciPanel"></div>
     </section>
+
+    <div id="loading" class="loading">Loading combined-report.json...</div>
   </div>
-</main>
 
-<script>
-var allThreats = [];
-var currentSort = { field: null, asc: true };
+  <script>
+    window.__EMBEDDED_BASELINE__ = window.__EMBEDDED_BASELINE__ || null;
+    window.__EMBEDDED_PIPELINE__ = window.__EMBEDDED_PIPELINE__ || null;
 
-var STRIDE_CATEGORIES = [
-  'Spoofing', 'Tampering', 'Repudiation',
-  'InformationDisclosure', 'DenialOfService', 'ElevationOfPrivilege'
-];
+    const STRIDE_CATEGORIES = [
+      'Spoofing', 'Tampering', 'Repudiation', 'InformationDisclosure', 'DenialOfService', 'ElevationOfPrivilege'
+    ];
 
-var CAT_ALIASES = {
-  'information disclosure': 'InformationDisclosure',
-  'informationdisclosure':  'InformationDisclosure',
-  'denial of service':      'DenialOfService',
-  'denialofservice':        'DenialOfService',
-  'elevation of privilege': 'ElevationOfPrivilege',
-  'elevationofprivilege':   'ElevationOfPrivilege',
-};
-function normCat(cat) {
-  var k = (cat || '').trim().toLowerCase().replace(/\s+/g,'');
-  return CAT_ALIASES[k] || cat;
-}
+    const ATTACK_CATALOG = [
+      { attack_name: 'SQL Injection', attack_class: 'SqlInjectionAttack', category: 'Tampering' },
+      { attack_name: 'Brute Force', attack_class: 'BruteForceAttack', category: 'DenialOfService' },
+      { attack_name: 'Session Fixation', attack_class: 'SessionFixationAttack', category: 'Spoofing' },
+      { attack_name: 'JWT Token Security', attack_class: 'JwtTokenAttack', category: 'Spoofing' },
+      { attack_name: 'Cross-Site Scripting', attack_class: 'XssAttack', category: 'Tampering' },
+      { attack_name: 'Path Traversal', attack_class: 'PathTraversalAttack', category: 'InformationDisclosure' },
+      { attack_name: 'Information Leakage', attack_class: 'InfoLeakAttack', category: 'InformationDisclosure' },
+      { attack_name: 'Insecure HTTP Headers', attack_class: 'InsecureHeadersAttack', category: 'InformationDisclosure' },
+      { attack_name: 'CORS Misconfiguration', attack_class: 'CorsAttack', category: 'Spoofing' },
+      { attack_name: 'Weak Password Policy', attack_class: 'WeakPasswordAttack', category: 'ElevationOfPrivilege' }
+    ];
 
-fetch('combined-report.json?' + Date.now())
-  .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-  .then(function(data) { initDashboard(data); })
-  .catch(function(err) {
-    document.getElementById('loadingMsg').innerHTML =
-      '<div class="error-box"><div class="error-icon">⚠️</div><p>Could not load <code>combined-report.json</code><br><br>' +
-      err.message + '<br><br>Use <code>dashboard-standalone.html</code> to view without a web server.</p></div>';
-  });
+    const REPO_OWNER = 'juancontrerasp';
+    const REPO_NAME = 'Attack-Simulation-FDSI';
+    const ACTIONS_URL = `https://github.com/${REPO_OWNER}/${REPO_NAME}/actions`;
+    const ACTIONS_API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/runs?per_page=1`;
 
-function initDashboard(data) {
-  document.getElementById('loadingMsg').style.display = 'none';
-  document.getElementById('content').style.display = '';
+    const FILTER_KEY = 'unified-dashboard-filters-v1';
 
-  var ts = data.timestamp || new Date().toISOString();
-  document.getElementById('reportTimestamp').textContent = 'Report: ' + new Date(ts).toLocaleString();
-
-  var threats = (data.combined_threats || []).map(function(t) {
-    return Object.assign({}, t, { category: normCat(t.category) });
-  });
-  allThreats = threats;
-
-  renderCards(data, threats);
-  renderRadar(threats);
-  renderStrideBars(threats);
-  renderCIPanel(data);
-  populateCategoryFilter(threats);
-  renderTable(threats);
-}
-
-function renderCards(data, threats) {
-  var total = threats.length;
-  var alta  = threats.filter(function(t){ return t.severity === 'Alta'; }).length;
-  var media = threats.filter(function(t){ return t.severity === 'Media'; }).length;
-  var baja  = threats.filter(function(t){ return t.severity === 'Baja'; }).length;
-  var conf  = threats.filter(function(t){ return t.confirmed === true; }).length;
-  var covCats = STRIDE_CATEGORIES.filter(function(c){
-    return threats.some(function(t){ return t.category === c; });
-  }).length;
-
-  var cards = [
-    { label: 'Total Threats',   value: total, cls: 'white' },
-    { label: 'Alta',            value: alta,  cls: 'red' },
-    { label: 'Media',           value: media, cls: 'yellow' },
-    { label: 'Baja',            value: baja,  cls: 'green' },
-    { label: 'Confirmed',       value: conf,  cls: 'cyan' },
-    { label: 'STRIDE Coverage', value: Math.round(covCats/6*100)+'%', cls: 'cyan' },
-  ];
-  document.getElementById('metricCards').innerHTML = cards.map(function(c){
-    return '<div class="card"><div class="c-label">'+c.label+'</div><div class="c-value '+c.cls+'">'+c.value+'</div></div>';
-  }).join('');
-
-  var dot = document.getElementById('ciDot');
-  var ciText = document.getElementById('ciStatusText');
-  if (alta === 0) {
-    dot.className = 'ci-dot pass';
-    ciText.textContent = 'Baseline OK';
-  } else {
-    dot.className = 'ci-dot fail';
-    ciText.textContent = alta + ' High threat(s)';
-  }
-}
-
-var radarChart = null;
-function renderRadar(threats) {
-  var counts = STRIDE_CATEGORIES.map(function(cat){
-    return threats.filter(function(t){ return t.category === cat; }).length;
-  });
-  var ctx = document.getElementById('radarChart').getContext('2d');
-  if (radarChart) radarChart.destroy();
-  radarChart = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: STRIDE_CATEGORIES,
-      datasets: [{
-        label: 'Threats',
-        data: counts,
-        backgroundColor: 'rgba(129,140,248,0.15)',
-        borderColor: '#818cf8',
-        pointBackgroundColor: '#818cf8',
-        borderWidth: 2,
-        pointRadius: 4,
-      }]
-    },
-    options: {
-      scales: {
-        r: {
-          min: 0,
-          ticks: { color: '#888', stepSize: 1, precision: 0 },
-          grid: { color: '#2d2d44' },
-          pointLabels: { color: '#ccc', font: { size: 11 } },
-          angleLines: { color: '#2d2d44' }
-        }
+    const state = {
+      raw: null,
+      threats: [],
+      baseline: [],
+      pipeline: null,
+      filters: {
+        categories: new Set(STRIDE_CATEGORIES),
+        severities: new Set(['Alta', 'Media', 'Baja']),
+        confirmation: 'all'
       },
-      plugins: { legend: { display: false } }
+      expandedCategories: new Set()
+    };
+
+    let radarChart = null;
+
+    const CATEGORY_ALIASES = {
+      'informationdisclosure': 'InformationDisclosure',
+      'information disclosure': 'InformationDisclosure',
+      'denialofservice': 'DenialOfService',
+      'denial of service': 'DenialOfService',
+      'elevationofprivilege': 'ElevationOfPrivilege',
+      'elevation of privilege': 'ElevationOfPrivilege',
+      spoofing: 'Spoofing',
+      tampering: 'Tampering',
+      repudiation: 'Repudiation'
+    };
+
+    function normCategory(cat) {
+      const raw = String(cat || '').trim();
+      const compact = raw.toLowerCase().replace(/\s+/g, '');
+      return CATEGORY_ALIASES[compact] || CATEGORY_ALIASES[raw.toLowerCase()] || raw || 'UnknownCategory';
     }
-  });
-}
 
-function renderStrideBars(threats) {
-  var counts = STRIDE_CATEGORIES.map(function(c){
-    return threats.filter(function(t){ return t.category === c; }).length;
-  });
-  var maxCount = Math.max.apply(null, counts.concat([1]));
-  document.getElementById('strideBars').innerHTML = STRIDE_CATEGORIES.map(function(cat, i){
-    var count = counts[i];
-    var pct = Math.round(count / maxCount * 100);
-    var color = count === 0 ? '#2d2d44' : count >= 3 ? '#f87171' : count >= 2 ? '#facc15' : '#4ade80';
-    return '<div class="stride-row">' +
-      '<div class="stride-label"><span>'+cat+'</span><span class="cnt">'+count+' threat'+(count!==1?'s':'')+'</span></div>' +
-      '<div class="progress"><div class="progress-fill" style="width:'+pct+'%;background:'+color+'"></div></div>' +
-      '</div>';
-  }).join('');
-}
-
-function renderCIPanel(data) {
-  var sum = data.executive_summary || {};
-  var ts  = data.timestamp || new Date().toISOString();
-  var items = [
-    { icon:'🔄', title:'Last Analysis Run',         detail:'STRIDE + dynamic validation via diff-analyzer',                     badge:'info', badgeText: new Date(ts).toLocaleString() },
-    { icon:'📊', title:'Threat Detection',           detail:(sum.total_detected||0)+' detected · '+(sum.total_confirmed||0)+' confirmed dynamically', badge:'pass', badgeText: sum.system_status||'N/A' },
-    { icon:'🔒', title:'Baseline Validation',        detail:'Automated check against security/baseline.json on every push',     badge:'pass', badgeText:'Configured' },
-    { icon:'📦', title:'Artifact: threats-output.json', detail:'Published on every CI run (retention: 30 days)',                badge:'info', badgeText:'Automated' },
-  ];
-  document.getElementById('ciPanel').innerHTML = items.map(function(i){
-    return '<div class="ci-item"><div class="ci-icon">'+i.icon+'</div><div class="ci-info"><div class="ci-title">'+i.title+'</div><div class="ci-detail">'+i.detail+'</div></div><span class="ci-badge '+i.badge+'">'+i.badgeText+'</span></div>';
-  }).join('');
-}
-
-function populateCategoryFilter(threats) {
-  var cats = [];
-  threats.forEach(function(t){ if (cats.indexOf(t.category) === -1) cats.push(t.category); });
-  cats.sort();
-  var sel = document.getElementById('catFilter');
-  cats.forEach(function(c){
-    var o = document.createElement('option');
-    o.value = c; o.textContent = c;
-    sel.appendChild(o);
-  });
-}
-
-function renderTable(threats) {
-  var tbody = document.getElementById('threatsBody');
-  var noRes = document.getElementById('noResults');
-  if (threats.length === 0) {
-    tbody.innerHTML = '';
-    noRes.style.display = '';
-    return;
-  }
-  noRes.style.display = 'none';
-  tbody.innerHTML = threats.map(function(t){
-    var confBadge = t.confirmed === true
-      ? '<span class="badge badge-confirm">✓ Confirmed</span>'
-      : '<span class="badge badge-unconf">Unconfirmed</span>';
-    return '<tr>' +
-      '<td><span class="badge badge-cat">'+t.category+'</span></td>' +
-      '<td><strong>'+(t.component||'—')+'</strong></td>' +
-      '<td><span class="badge badge-'+(t.severity||'')+'">'+t.severity+'</span></td>' +
-      '<td><span>'+(t.description||'—')+'</span>'+(t.mitigation?'<div class="threat-desc">💡 '+t.mitigation+'</div>':'')+'</td>' +
-      '<td>'+confBadge+'</td></tr>';
-  }).join('');
-}
-
-function applyFilters() {
-  var q    = document.getElementById('searchBox').value.toLowerCase();
-  var sev  = document.getElementById('sevFilter').value;
-  var cat  = document.getElementById('catFilter').value;
-  var conf = document.getElementById('confFilter').value;
-
-  var filtered = allThreats.filter(function(t){
-    if (sev && t.severity !== sev) return false;
-    if (cat && t.category !== cat) return false;
-    if (conf === 'yes' && t.confirmed !== true) return false;
-    if (conf === 'no'  && t.confirmed === true) return false;
-    if (q) {
-      var haystack = [t.category, t.component, t.description, t.mitigation].join(' ').toLowerCase();
-      if (haystack.indexOf(q) === -1) return false;
+    function baselineKey(obj) {
+      return `${normCategory(obj.category).toLowerCase()}|${String(obj.component || '').trim().toLowerCase()}`;
     }
-    return true;
-  });
 
-  if (currentSort.field) filtered = sortThreats(filtered, currentSort.field, currentSort.asc);
-  renderTable(filtered);
-}
-
-var SEV_ORDER = { Alta: 0, Media: 1, Baja: 2 };
-function sortThreats(threats, field, asc) {
-  return threats.slice().sort(function(a, b){
-    var va = a[field], vb = b[field];
-    if (field === 'severity')   { va = SEV_ORDER[va]||9; vb = SEV_ORDER[vb]||9; }
-    else if (field === 'confirmed') { va = va===true?0:1; vb = vb===true?0:1; }
-    else { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
-    if (va < vb) return asc ? -1 : 1;
-    if (va > vb) return asc ?  1 : -1;
-    return 0;
-  });
-}
-
-function sortBy(field) {
-  if (currentSort.field === field) currentSort.asc = !currentSort.asc;
-  else { currentSort.field = field; currentSort.asc = true; }
-  document.querySelectorAll('thead th').forEach(function(th){ th.classList.remove('sorted'); });
-  document.querySelectorAll('thead th').forEach(function(th){
-    if (th.getAttribute('onclick') === "sortBy('"+field+"')") {
-      th.classList.add('sorted');
-      th.querySelector('.sort-icon').textContent = currentSort.asc ? '↑' : '↓';
+    function normalizeThreat(t) {
+      return {
+        category: normCategory(t.category),
+        component: String(t.component || '').trim() || 'UnknownComponent',
+        severity: (t.severity === 'Alta' || t.severity === 'Media' || t.severity === 'Baja') ? t.severity : 'Media',
+        description: String(t.description || ''),
+        mitigation: String(t.mitigation || ''),
+        confirmed: t.confirmed === true ? true : (t.confirmed === false ? false : null),
+        dynamic_validation: t.dynamic_validation || null
+      };
     }
-  });
-  applyFilters();
-}
-</script>
+
+    function loadSavedFilters() {
+      try {
+        const saved = localStorage.getItem(FILTER_KEY);
+        if (!saved) return;
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.categories) && parsed.categories.length) {
+          state.filters.categories = new Set(parsed.categories);
+        }
+        if (Array.isArray(parsed.severities) && parsed.severities.length) {
+          state.filters.severities = new Set(parsed.severities);
+        }
+        if (parsed.confirmation === 'all' || parsed.confirmation === 'confirmed' || parsed.confirmation === 'not-confirmed') {
+          state.filters.confirmation = parsed.confirmation;
+        }
+      } catch (_) {
+      }
+    }
+
+    function saveFilters() {
+      const serializable = {
+        categories: [...state.filters.categories],
+        severities: [...state.filters.severities],
+        confirmation: state.filters.confirmation
+      };
+      localStorage.setItem(FILTER_KEY, JSON.stringify(serializable));
+    }
+
+    function setupFilters() {
+      const categoryRoot = document.getElementById('categoryFilters');
+      categoryRoot.innerHTML = STRIDE_CATEGORIES.map((cat) => {
+        const checked = state.filters.categories.has(cat) ? 'checked' : '';
+        return `<label><input type="checkbox" data-type="category" value="${cat}" ${checked}> ${cat}</label>`;
+      }).join('');
+
+      const severityRoot = document.getElementById('severityFilters');
+      const severities = ['Alta', 'Media', 'Baja'];
+      severityRoot.innerHTML = severities.map((sev) => {
+        const checked = state.filters.severities.has(sev) ? 'checked' : '';
+        return `<label><input type="checkbox" data-type="severity" value="${sev}" ${checked}> ${sev}</label>`;
+      }).join('');
+
+      const confirmationRoot = document.getElementById('confirmationFilters');
+      const options = [
+        { label: 'All', value: 'all' },
+        { label: 'Confirmed', value: 'confirmed' },
+        { label: 'Not Confirmed', value: 'not-confirmed' }
+      ];
+      confirmationRoot.innerHTML = options.map((opt) => {
+        const checked = state.filters.confirmation === opt.value ? 'checked' : '';
+        return `<label><input type="radio" name="confirmation" data-type="confirmation" value="${opt.value}" ${checked}> ${opt.label}</label>`;
+      }).join('');
+
+      document.querySelectorAll('input[data-type="category"]').forEach((input) => {
+        input.addEventListener('change', () => {
+          const value = input.value;
+          if (input.checked) state.filters.categories.add(value);
+          else state.filters.categories.delete(value);
+          if (state.filters.categories.size === 0) state.filters.categories.add(value);
+          saveFilters();
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll('input[data-type="severity"]').forEach((input) => {
+        input.addEventListener('change', () => {
+          const value = input.value;
+          if (input.checked) state.filters.severities.add(value);
+          else state.filters.severities.delete(value);
+          if (state.filters.severities.size === 0) state.filters.severities.add(value);
+          saveFilters();
+          renderAll();
+        });
+      });
+
+      document.querySelectorAll('input[data-type="confirmation"]').forEach((input) => {
+        input.addEventListener('change', () => {
+          state.filters.confirmation = input.value;
+          saveFilters();
+          renderAll();
+        });
+      });
+    }
+
+    function applyGlobalFilters(threats) {
+      const f = state.filters;
+      return threats.filter((t) => {
+        if (!f.categories.has(t.category)) return false;
+        if (!f.severities.has(t.severity)) return false;
+        if (f.confirmation === 'confirmed' && t.confirmed !== true) return false;
+        if (f.confirmation === 'not-confirmed' && t.confirmed === true) return false;
+        return true;
+      });
+    }
+
+    function severityCounts(list) {
+      return {
+        Alta: list.filter((x) => x.severity === 'Alta').length,
+        Media: list.filter((x) => x.severity === 'Media').length,
+        Baja: list.filter((x) => x.severity === 'Baja').length
+      };
+    }
+
+    function cardClass(counts) {
+      if (counts.Alta > 0) return 'high';
+      if (counts.Media > 0 || counts.Baja > 0) return 'mid';
+      return 'low';
+    }
+
+    function renderStrideCards(filtered) {
+      const root = document.getElementById('strideCards');
+      const byCategory = Object.fromEntries(STRIDE_CATEGORIES.map((cat) => [cat, []]));
+      filtered.forEach((t) => {
+        if (!byCategory[t.category]) byCategory[t.category] = [];
+        byCategory[t.category].push(t);
+      });
+
+      root.innerHTML = STRIDE_CATEGORIES.map((cat) => {
+        const items = byCategory[cat] || [];
+        const counts = severityCounts(items);
+        const expanded = state.expandedCategories.has(cat);
+        const listHtml = items.length
+          ? items.map((item) => {
+              return `<div class="threat-item"><div class="head">[${item.severity}] ${item.component}</div><div>${item.description || 'No description.'}</div></div>`;
+            }).join('')
+          : '<div class="empty">No threats for this category under current filters.</div>';
+
+        return `
+          <article class="stride-card ${cardClass(counts)}" data-cat="${cat}">
+            <div class="row">
+              <div class="cat">${cat}</div>
+              <div class="count">${items.length}</div>
+            </div>
+            <div class="sev-badges">
+              <span class="badge b-high">Alta: ${counts.Alta}</span>
+              <span class="badge b-mid">Media: ${counts.Media}</span>
+              <span class="badge b-low">Baja: ${counts.Baja}</span>
+            </div>
+            <div class="threat-list ${expanded ? 'open' : ''}">${listHtml}</div>
+          </article>
+        `;
+      }).join('');
+
+      root.querySelectorAll('.stride-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          const cat = card.getAttribute('data-cat');
+          if (state.expandedCategories.has(cat)) state.expandedCategories.delete(cat);
+          else state.expandedCategories.add(cat);
+          renderStrideCards(filtered);
+        });
+      });
+    }
+
+    function renderRadar(filtered) {
+      const detected = STRIDE_CATEGORIES.map((cat) => filtered.filter((t) => t.category === cat).length);
+      const confirmed = STRIDE_CATEGORIES.map((cat) => filtered.filter((t) => t.category === cat && t.confirmed === true).length);
+
+      const ctx = document.getElementById('strideRadar').getContext('2d');
+      if (radarChart) radarChart.destroy();
+
+      radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: STRIDE_CATEGORIES,
+          datasets: [
+            {
+              label: 'Detectadas (estatico)',
+              data: detected,
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59,130,246,0.18)',
+              pointBackgroundColor: '#3b82f6',
+              borderWidth: 2
+            },
+            {
+              label: 'Confirmadas (dinamico)',
+              data: confirmed,
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239,68,68,0.12)',
+              pointBackgroundColor: '#ef4444',
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, color: '#94a3b8' },
+              grid: { color: '#334155' },
+              angleLines: { color: '#334155' },
+              pointLabels: { color: '#cbd5e1', font: { size: 11 } }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#e5e7eb' }
+            }
+          }
+        }
+      });
+    }
+
+    function findThreatForAttack(catalogItem, normalizedThreats) {
+      const byClass = normalizedThreats.find((t) => {
+        const comp = String(t.component || '').toLowerCase();
+        return comp === catalogItem.attack_class.toLowerCase() || comp.includes(catalogItem.attack_name.toLowerCase());
+      });
+      if (byClass) return byClass;
+
+      return normalizedThreats.find((t) => normCategory(t.category) === catalogItem.category);
+    }
+
+    function buildDynamicRows(raw, normalizedThreats) {
+      const source = Array.isArray(raw.dynamic_validation) ? raw.dynamic_validation : [];
+      const byClass = new Map(source.filter((x) => x && x.attack_class).map((x) => [x.attack_class, x]));
+
+      return ATTACK_CATALOG.map((item) => {
+        const dv = byClass.get(item.attack_class) || null;
+        const threat = findThreatForAttack(item, normalizedThreats);
+
+        return {
+          attack_name: item.attack_name,
+          attack_class: item.attack_class,
+          category: item.category,
+          vulnerable: dv ? !!dv.vulnerable : null,
+          confirmed: threat ? threat.confirmed : null,
+          severity: threat ? threat.severity : 'Media',
+          detail: {
+            evidence: dv && dv.evidence ? dv.evidence : (threat && threat.description ? threat.description : 'No details available'),
+            response_code: dv && dv.response_code !== undefined ? dv.response_code : null,
+            mitigation: threat && threat.mitigation ? threat.mitigation : ''
+          }
+        };
+      });
+    }
+
+    function applyDynamicFilters(rows) {
+      const f = state.filters;
+      return rows.filter((r) => {
+        if (!f.categories.has(r.category)) return false;
+        if (!f.severities.has(r.severity)) return false;
+        if (f.confirmation === 'confirmed' && r.confirmed !== true) return false;
+        if (f.confirmation === 'not-confirmed' && r.confirmed === true) return false;
+        return true;
+      });
+    }
+
+    function renderDynamicTable(filteredRows) {
+      const tbody = document.getElementById('dynamicTableBody');
+      if (!filteredRows.length) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No dynamic rows match current filters.</div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filteredRows.map((r) => {
+        const statusLabel = r.vulnerable === true
+          ? '<span class="status-vuln">vulnerable</span>'
+          : (r.vulnerable === false ? '<span class="status-safe">seguro</span>' : '<span class="status-na">no-disponible</span>');
+
+        const confirmLabel = r.confirmed === true
+          ? '<span class="confirm-yes">yes</span>'
+          : (r.confirmed === false ? '<span class="confirm-no">no</span>' : '<span class="confirm-na">no-disponible</span>');
+
+        const detailParts = [];
+        detailParts.push(`evidence: ${r.detail.evidence || 'n/a'}`);
+        if (r.detail.response_code !== null) detailParts.push(`response_code: ${r.detail.response_code}`);
+        if (r.detail.mitigation) detailParts.push(`mitigation: ${r.detail.mitigation}`);
+
+        return `
+          <tr>
+            <td><strong>${r.attack_name}</strong><div class="details">${r.attack_class}</div></td>
+            <td>${r.category}</td>
+            <td>${statusLabel}</td>
+            <td>${confirmLabel}</td>
+            <td><details><summary>expand</summary><div class="details">${detailParts.join('<br>')}</div></details></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadBaseline() {
+      try {
+        const response = await fetch('security/baseline.json?' + Date.now());
+        if (!response.ok) return [];
+        const data = await response.json();
+        if (Array.isArray(data)) return data;
+        if (Array.isArray(data.approved_threats)) return data.approved_threats;
+      } catch (_) {
+      }
+      return [];
+    }
+
+    async function loadPipelineStatus() {
+      try {
+        const response = await fetch(ACTIONS_API, { headers: { 'Accept': 'application/vnd.github+json' } });
+        if (!response.ok) return null;
+        const payload = await response.json();
+        if (!payload || !Array.isArray(payload.workflow_runs) || !payload.workflow_runs.length) return null;
+        const run = payload.workflow_runs[0];
+        return {
+          conclusion: run.conclusion || 'unknown',
+          status: run.status || 'unknown',
+          html_url: run.html_url || ACTIONS_URL,
+          run_number: run.run_number || null,
+          updated_at: run.updated_at || null
+        };
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function renderCIPanel(filteredThreats, baseline, pipeline) {
+      const baselineSet = new Set((baseline || []).map(baselineKey));
+      const known = filteredThreats.filter((t) => baselineSet.has(baselineKey(t))).length;
+      const newThreats = filteredThreats.filter((t) => !baselineSet.has(baselineKey(t)));
+      const newHigh = newThreats.filter((t) => t.severity === 'Alta').length;
+
+      const statusText = pipeline
+        ? `${pipeline.status} / ${pipeline.conclusion}`
+        : 'unknown';
+
+      const statusClass = pipeline && pipeline.conclusion === 'success'
+        ? 'pass'
+        : ((pipeline && pipeline.conclusion === 'failure') || newHigh > 0 ? 'fail' : 'unknown');
+
+      const dot = document.getElementById('ciDot');
+      dot.className = `dot ${statusClass}`;
+      document.getElementById('ciStatusText').textContent = `Pipeline ${statusText}`;
+
+      const root = document.getElementById('ciPanel');
+      const lastRunText = pipeline && pipeline.updated_at ? new Date(pipeline.updated_at).toLocaleString() : 'not available';
+      const runLink = pipeline && pipeline.html_url ? pipeline.html_url : ACTIONS_URL;
+
+      root.innerHTML = `
+        <article class="ci-card">
+          <div class="ci-k">Last Pipeline</div>
+          <div class="ci-v">${statusText}</div>
+          <div class="details">Updated: ${lastRunText}</div>
+          <a class="link" target="_blank" rel="noopener" href="${runLink}">Open latest GitHub Actions run</a>
+        </article>
+        <article class="ci-card">
+          <div class="ci-k">Threats New vs Baseline</div>
+          <div class="ci-v">${newThreats.length} new (${newHigh} Alta)</div>
+          <div class="details">Known (baseline match): ${known}</div>
+        </article>
+        <article class="ci-card">
+          <div class="ci-k">Baseline Entries</div>
+          <div class="ci-v">${baseline.length}</div>
+          <div class="details">Source: security/baseline.json</div>
+        </article>
+        <article class="ci-card">
+          <div class="ci-k">Report Context</div>
+          <div class="ci-v">${filteredThreats.length} visible threats</div>
+          <div class="details">Global filters are applied to all panels.</div>
+        </article>
+      `;
+    }
+
+    function renderAll() {
+      const t0 = performance.now();
+      const filteredThreats = applyGlobalFilters(state.threats);
+      renderStrideCards(filteredThreats);
+      renderRadar(filteredThreats);
+      const dynamicRows = buildDynamicRows(state.raw, state.threats);
+      const dynamicFiltered = applyDynamicFilters(dynamicRows);
+      renderDynamicTable(dynamicFiltered);
+      renderCIPanel(filteredThreats, state.baseline, state.pipeline);
+      const elapsed = performance.now() - t0;
+      const el = document.getElementById('loading');
+      el.textContent = `Last render: ${elapsed.toFixed(1)}ms`;
+    }
+
+    function initDashboard(data) {
+      state.raw = data;
+      state.threats = (Array.isArray(data.combined_threats) ? data.combined_threats : []).map(normalizeThreat);
+      const ts = data.timestamp ? new Date(data.timestamp) : new Date();
+      document.getElementById('reportTime').textContent = `Report: ${ts.toLocaleString()}`;
+      renderAll();
+    }
+
+    async function boot() {
+      loadSavedFilters();
+      setupFilters();
+
+      const embeddedBaseline = Array.isArray(window.__EMBEDDED_BASELINE__) ? window.__EMBEDDED_BASELINE__ : null;
+      const embeddedPipeline = window.__EMBEDDED_PIPELINE__ && typeof window.__EMBEDDED_PIPELINE__ === 'object'
+        ? window.__EMBEDDED_PIPELINE__
+        : null;
+
+      const [baseline, pipeline] = await Promise.all([
+        embeddedBaseline ? Promise.resolve(embeddedBaseline) : loadBaseline(),
+        embeddedPipeline ? Promise.resolve(embeddedPipeline) : loadPipelineStatus()
+      ]);
+      state.baseline = baseline;
+      state.pipeline = pipeline;
+
+      fetch('combined-report.json?' + Date.now())
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
+        .then((data) => {
+          initDashboard(data);
+          document.getElementById('loading').textContent = 'Dashboard ready.';
+        })
+        .catch((error) => {
+          document.getElementById('loading').innerHTML = `<div class="empty">Failed to load combined-report.json: ${error.message}</div>`;
+        });
+    }
+
+    boot();
+  </script>
 </body>
 </html>
