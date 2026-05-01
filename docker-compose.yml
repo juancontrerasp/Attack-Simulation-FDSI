@@ -1,0 +1,29 @@
+# ST-10.3 — Orquestación principal
+# DEV_MODE y credenciales se leen EXCLUSIVAMENTE del archivo .env externo.
+# Nunca hardcodear credenciales aquí.
+version: '3.8'
+
+services:
+  stride-agent:
+    image: stride-agent
+    env_file: .env
+    volumes:
+      - stride-cache:/app/cache
+      - stride-output:/app/output
+    networks: [stride-network]
+
+  attack-engine:
+    image: attack-engine
+    volumes:
+      - ./config:/app/config:ro
+      - stride-output:/app/output
+    networks: [stride-network]
+    depends_on: [stride-agent]
+
+volumes:
+  stride-cache:
+  stride-output:
+
+networks:
+  stride-network:
+    driver: bridge

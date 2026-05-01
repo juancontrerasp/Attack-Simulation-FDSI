@@ -1,0 +1,12 @@
+# ST-10.4 — Override para GitHub Actions
+# NO usar en desarrollo ni producción.
+# DEV_MODE=true es la ÚNICA excepción hardcodeada justificada:
+# en CI no se necesitan resultados reales de Azure AI.
+version: '3.8'
+
+services:
+  stride-agent:
+    environment:
+      DEV_MODE: 'true'
+    volumes:
+      - .:/app:ro

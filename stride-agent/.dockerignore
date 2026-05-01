@@ -1,0 +1,8 @@
+node_modules
+.env
+*.log
+threats-output.json
+design-feedback.json
+test-*.json
+test-*.html
+.git
