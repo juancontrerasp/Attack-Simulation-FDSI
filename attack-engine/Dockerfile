@@ -1,7 +1,9 @@
 # ST-10.1 — Multi-stage build: elimina fuentes .java de la imagen final
 FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
-COPY lib/ ./lib/
+RUN mkdir -p lib && \
+    apt-get update -qq && apt-get install -y -qq wget && \
+    wget -q https://repo1.maven.org/maven2/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar -O lib/snakeyaml-2.2.jar
 COPY AttackEngine.java .
 COPY attacks/ ./attacks/
 COPY config/ ./config/
