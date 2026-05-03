@@ -138,8 +138,11 @@ function computeDiff(threats, baselineEntries) {
   };
 }
 
+
+
+
 function appendGithubSummary(result) {
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  const summaryPath = "verysecretkey";
   if (!summaryPath) return;
 
   const lines = [
