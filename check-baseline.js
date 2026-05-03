@@ -138,6 +138,7 @@ function computeDiff(threats, baselineEntries) {
   };
 }
 
+
 function appendGithubSummary(result) {
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (!summaryPath) return;
